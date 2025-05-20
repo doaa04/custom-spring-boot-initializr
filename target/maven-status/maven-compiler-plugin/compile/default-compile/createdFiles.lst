@@ -1,0 +1,8 @@
+com\example\cligenerator\model\FieldDefinition.class
+com\example\cligenerator\service\InitializrService.class
+com\example\cligenerator\config\FreemarkerConfig.class
+com\example\cligenerator\CliGeneratorApplication.class
+com\example\cligenerator\CliRunner.class
+com\example\cligenerator\model\EntityDefinition.class
+com\example\cligenerator\service\DockerfileGenerator.class
+com\example\cligenerator\service\CodeGeneratorService.class
