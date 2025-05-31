@@ -1,6 +1,6 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.Product;
+import com.example.demo.entity.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,30 +17,30 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@DisplayName("Product Repository Tests")
-class ProductRepositoryTest {
+@DisplayName("User Repository Tests")
+class UserRepositoryTest {
 
 @Autowired
 private TestEntityManager entityManager;
 
 @Autowired
-private ProductRepository productRepository;
+private UserRepository userRepository;
 
-private Product testProduct;
+private User testUser;
 
 @BeforeEach
 void setUp() {
-testProduct = new Product();
+testUser = new User();
 }
 
 @Test
 @DisplayName("Should find entity by ID when entity exists")
 void findById_ExistingEntity_ReturnsEntity() {
 // Given
-Product savedEntity = entityManager.persistAndFlush(testProduct);
+User savedEntity = entityManager.persistAndFlush(testUser);
 
 // When
-Optional<Product> result = productRepository.findById(savedEntity.getId());
+Optional<User> result = userRepository.findById(savedEntity.getId());
 
 // Then
 assertThat(result).isPresent();
@@ -51,7 +51,7 @@ assertThat(result.get().getId()).isEqualTo(savedEntity.getId());
 @DisplayName("Should return empty when finding by non-existing ID")
 void findById_NonExistingEntity_ReturnsEmpty() {
 // When
-Optional<Product> result = productRepository.findById(999L);
+Optional<User> result = userRepository.findById(999L);
 
 // Then
 assertThat(result).isEmpty();
@@ -61,7 +61,7 @@ assertThat(result).isEmpty();
 @DisplayName("Should save entity successfully")
 void save_ValidEntity_ReturnsSavedEntity() {
 // When
-Product savedEntity = productRepository.save(testProduct);
+User savedEntity = userRepository.save(testUser);
 
 // Then
 assertThat(savedEntity.getId()).isNotNull();
@@ -71,12 +71,12 @@ assertThat(savedEntity.getId()).isNotNull();
 @DisplayName("Should update entity successfully")
 void save_UpdateExistingEntity_ReturnsUpdatedEntity() {
 // Given
-Product savedEntity = entityManager.persistAndFlush(testProduct);
+User savedEntity = entityManager.persistAndFlush(testUser);
 entityManager.detach(savedEntity);
 
 
 // When
-Product updatedEntity = productRepository.save(savedEntity);
+User updatedEntity = userRepository.save(savedEntity);
 
 // Then
 assertThat(updatedEntity.getId()).isEqualTo(savedEntity.getId());
@@ -86,13 +86,13 @@ assertThat(updatedEntity.getId()).isEqualTo(savedEntity.getId());
 @DisplayName("Should delete entity successfully")
 void deleteById_ExistingEntity_DeletesEntity() {
 // Given
-Product savedEntity = entityManager.persistAndFlush(testProduct);
+User savedEntity = entityManager.persistAndFlush(testUser);
 
 // When
-productRepository.deleteById(savedEntity.getId());
+userRepository.deleteById(savedEntity.getId());
 
 // Then
-Optional<Product> result = productRepository.findById(savedEntity.getId());
+Optional<User> result = userRepository.findById(savedEntity.getId());
 assertThat(result).isEmpty();
 }
 
@@ -100,13 +100,13 @@ assertThat(result).isEmpty();
 @DisplayName("Should return all entities")
 void findAll_ReturnsAllEntities() {
 // Given
-Product entity1 = entityManager.persistAndFlush(testProduct);
+User entity1 = entityManager.persistAndFlush(testUser);
 
-Product entity2 = new Product();
+User entity2 = new User();
 entityManager.persistAndFlush(entity2);
 
 // When
-List<Product> entities = productRepository.findAll();
+List<User> entities = userRepository.findAll();
 
 // Then
 assertThat(entities).hasSize(2);
@@ -118,13 +118,13 @@ assertThat(entities).extracting("id").contains(entity1.getId(), entity2.getId())
 void findAll_WithPageable_ReturnsPagedResult() {
 // Given
 for (int i = 0; i < 5; i++) {
-Product entity = new Product();
+User entity = new User();
 entityManager.persistAndFlush(entity);
 }
 
 // When
 Pageable pageable = PageRequest.of(0, 3);
-Page<Product> page = productRepository.findAll(pageable);
+Page<User> page = userRepository.findAll(pageable);
 
 // Then
 assertThat(page.getContent()).hasSize(3);
@@ -136,10 +136,10 @@ assertThat(page.getTotalPages()).isEqualTo(2);
 @DisplayName("Should check if entity exists by ID")
 void existsById_ExistingEntity_ReturnsTrue() {
 // Given
-Product savedEntity = entityManager.persistAndFlush(testProduct);
+User savedEntity = entityManager.persistAndFlush(testUser);
 
 // When
-boolean exists = productRepository.existsById(savedEntity.getId());
+boolean exists = userRepository.existsById(savedEntity.getId());
 
 // Then
 assertThat(exists).isTrue();
@@ -149,7 +149,7 @@ assertThat(exists).isTrue();
 @DisplayName("Should return false when entity does not exist")
 void existsById_NonExistingEntity_ReturnsFalse() {
 // When
-boolean exists = productRepository.existsById(999L);
+boolean exists = userRepository.existsById(999L);
 
 // Then
 assertThat(exists).isFalse();
@@ -159,13 +159,13 @@ assertThat(exists).isFalse();
 @DisplayName("Should return correct count of entities")
 void count_ReturnsCorrectCount() {
 // Given
-entityManager.persistAndFlush(testProduct);
+entityManager.persistAndFlush(testUser);
 
-Product entity2 = new Product();
+User entity2 = new User();
 entityManager.persistAndFlush(entity2);
 
 // When
-long count = productRepository.count();
+long count = userRepository.count();
 
 // Then
 assertThat(count).isEqualTo(2);

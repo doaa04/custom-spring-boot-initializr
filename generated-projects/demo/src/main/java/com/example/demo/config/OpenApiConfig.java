@@ -62,8 +62,8 @@ private List<Server> serversList() {
     }    private List<Tag> tagsList() {
         return Arrays.asList(
             new Tag()
-            .name("product")
-            .description("Operations related to Product management")
+            .name("user")
+            .description("Operations related to User management")
         );
         }
         }

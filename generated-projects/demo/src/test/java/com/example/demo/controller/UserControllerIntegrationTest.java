@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ProductDto;
-import com.example.demo.entity.Product;
-import com.example.demo.repository.ProductRepository;
+import com.example.demo.dto.UserDto;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,8 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 @Transactional
-@DisplayName("Product Controller Integration Tests")
-class ProductControllerIntegrationTest {
+@DisplayName("User Controller Integration Tests")
+class UserControllerIntegrationTest {
 
 @Autowired
 private MockMvc mockMvc;
@@ -36,134 +36,134 @@ private MockMvc mockMvc;
 private ObjectMapper objectMapper;
 
 @Autowired
-private ProductRepository productRepository;
+private UserRepository userRepository;
 
-private ProductDto testProductDto;
-private Product savedProduct;
+private UserDto testUserDto;
+private User savedUser;
 
 @BeforeEach
 void setUp() {
-productRepository.deleteAll();
+userRepository.deleteAll();
 
-testProductDto = new ProductDto();
+testUserDto = new UserDto();
 
 // Create a saved entity for tests
-Product entity = new Product();
-savedProduct = productRepository.save(entity);
+User entity = new User();
+savedUser = userRepository.save(entity);
 }
 
 @Test
-@DisplayName("Should return all entities when GET /api/products")
+@DisplayName("Should return all entities when GET /api/users")
 void getAllEntities_ReturnsListOfEntities() throws Exception {
-mockMvc.perform(get("/api/products"))
+mockMvc.perform(get("/api/users"))
 .andExpect(status().isOk())
 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
 .andExpect(jsonPath("$.content", hasSize(1)))
-.andExpect(jsonPath("$.content[0].id", is(savedProduct.getId().intValue())))
+.andExpect(jsonPath("$.content[0].id", is(savedUser.getId().intValue())))
 .andExpect(jsonPath("$.totalElements", is(1)))
 .andExpect(jsonPath("$.totalPages", is(1)));
 }
 
 @Test
-@DisplayName("Should return entity when GET /api/products/{id} with existing ID")
+@DisplayName("Should return entity when GET /api/users/{id} with existing ID")
 void getEntityById_ExistingId_ReturnsEntity() throws Exception {
-mockMvc.perform(get("/api/products/{id}", savedProduct.getId()))
+mockMvc.perform(get("/api/users/{id}", savedUser.getId()))
 .andExpect(status().isOk())
 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-.andExpect(jsonPath("$.id", is(savedProduct.getId().intValue())));
+.andExpect(jsonPath("$.id", is(savedUser.getId().intValue())));
 }
 
 @Test
-@DisplayName("Should return 404 when GET /api/products/{id} with non-existing ID")
+@DisplayName("Should return 404 when GET /api/users/{id} with non-existing ID")
 void getEntityById_NonExistingId_ReturnsNotFound() throws Exception {
-mockMvc.perform(get("/api/products/999"))
+mockMvc.perform(get("/api/users/999"))
 .andExpect(status().isNotFound());
 }
 
 @Test
-@DisplayName("Should create entity when POST /api/products with valid data")
-void createProduct_ValidInput_ReturnsCreated() throws Exception {
-mockMvc.perform(post("/api/products")
+@DisplayName("Should create entity when POST /api/users with valid data")
+void createUser_ValidInput_ReturnsCreated() throws Exception {
+mockMvc.perform(post("/api/users")
 .contentType(MediaType.APPLICATION_JSON)
-.content(objectMapper.writeValueAsString(testProductDto)))
+.content(objectMapper.writeValueAsString(testUserDto)))
 .andExpect(status().isCreated())
 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
 .andExpect(jsonPath("$.id", notNullValue()));
 }
 
 @Test
-@DisplayName("Should return 400 when POST /api/products with invalid data")
-void createProduct_InvalidInput_ReturnsBadRequest() throws Exception {
-ProductDto invalidDto = new ProductDto();
+@DisplayName("Should return 400 when POST /api/users with invalid data")
+void createUser_InvalidInput_ReturnsBadRequest() throws Exception {
+UserDto invalidDto = new UserDto();
 // Leave required fields empty to trigger validation errors
 
-mockMvc.perform(post("/api/products")
+mockMvc.perform(post("/api/users")
 .contentType(MediaType.APPLICATION_JSON)
 .content(objectMapper.writeValueAsString(invalidDto)))
 .andExpect(status().isBadRequest());
 }
 
 @Test
-@DisplayName("Should update entity when PUT /api/products/{id} with valid data")
-void updateProduct_ValidInput_ReturnsUpdated() throws Exception {
-testProductDto.setId(savedProduct.getId());
+@DisplayName("Should update entity when PUT /api/users/{id} with valid data")
+void updateUser_ValidInput_ReturnsUpdated() throws Exception {
+testUserDto.setId(savedUser.getId());
 
-mockMvc.perform(put("/api/products/{id}", savedProduct.getId())
+mockMvc.perform(put("/api/users/{id}", savedUser.getId())
 .contentType(MediaType.APPLICATION_JSON)
-.content(objectMapper.writeValueAsString(testProductDto)))
+.content(objectMapper.writeValueAsString(testUserDto)))
 .andExpect(status().isOk())
 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-.andExpect(jsonPath("$.id", is(savedProduct.getId().intValue())));
+.andExpect(jsonPath("$.id", is(savedUser.getId().intValue())));
 }
 
 @Test
-@DisplayName("Should return 404 when PUT /api/products/{id} with non-existing ID")
-void updateProduct_NonExistingId_ReturnsNotFound() throws Exception {
-mockMvc.perform(put("/api/products/999")
+@DisplayName("Should return 404 when PUT /api/users/{id} with non-existing ID")
+void updateUser_NonExistingId_ReturnsNotFound() throws Exception {
+mockMvc.perform(put("/api/users/999")
 .contentType(MediaType.APPLICATION_JSON)
-.content(objectMapper.writeValueAsString(testProductDto)))
+.content(objectMapper.writeValueAsString(testUserDto)))
 .andExpect(status().isNotFound());
 }
 
 @Test
-@DisplayName("Should return 400 when PUT /api/products/{id} with mismatched IDs")
-void updateProduct_MismatchedIds_ReturnsBadRequest() throws Exception {
-testProductDto.setId(999L);
+@DisplayName("Should return 400 when PUT /api/users/{id} with mismatched IDs")
+void updateUser_MismatchedIds_ReturnsBadRequest() throws Exception {
+testUserDto.setId(999L);
 
-mockMvc.perform(put("/api/products/{id}", savedProduct.getId())
+mockMvc.perform(put("/api/users/{id}", savedUser.getId())
 .contentType(MediaType.APPLICATION_JSON)
-.content(objectMapper.writeValueAsString(testProductDto)))
+.content(objectMapper.writeValueAsString(testUserDto)))
 .andExpect(status().isBadRequest());
 }
 
 @Test
-@DisplayName("Should delete entity when DELETE /api/products/{id} with existing ID")
-void deleteProduct_ExistingId_ReturnsNoContent() throws Exception {
-mockMvc.perform(delete("/api/products/{id}", savedProduct.getId()))
+@DisplayName("Should delete entity when DELETE /api/users/{id} with existing ID")
+void deleteUser_ExistingId_ReturnsNoContent() throws Exception {
+mockMvc.perform(delete("/api/users/{id}", savedUser.getId()))
 .andExpect(status().isNoContent());
 
 // Verify entity is deleted
-mockMvc.perform(get("/api/products/{id}", savedProduct.getId()))
+mockMvc.perform(get("/api/users/{id}", savedUser.getId()))
 .andExpect(status().isNotFound());
 }
 
 @Test
-@DisplayName("Should return 404 when DELETE /api/products/{id} with non-existing ID")
-void deleteProduct_NonExistingId_ReturnsNotFound() throws Exception {
-mockMvc.perform(delete("/api/products/999"))
+@DisplayName("Should return 404 when DELETE /api/users/{id} with non-existing ID")
+void deleteUser_NonExistingId_ReturnsNotFound() throws Exception {
+mockMvc.perform(delete("/api/users/999"))
 .andExpect(status().isNotFound());
 }
 
 @Test
-@DisplayName("Should handle pagination when GET /api/products with page parameters")
+@DisplayName("Should handle pagination when GET /api/users with page parameters")
 void getAllEntities_WithPagination_ReturnsPagedResult() throws Exception {
 // Create additional entities for pagination test
 for (int i = 0; i < 5; i++) {
-Product entity = new Product();
-productRepository.save(entity);
+User entity = new User();
+userRepository.save(entity);
 }
 
-mockMvc.perform(get("/api/products")
+mockMvc.perform(get("/api/users")
 .param("page", "0")
 .param("size", "3"))
 .andExpect(status().isOk())
@@ -176,8 +176,8 @@ mockMvc.perform(get("/api/products")
 
 @Test
 @DisplayName("Should return validation errors for invalid JSON")
-void createProduct_MalformedJson_ReturnsBadRequest() throws Exception {
-mockMvc.perform(post("/api/products")
+void createUser_MalformedJson_ReturnsBadRequest() throws Exception {
+mockMvc.perform(post("/api/users")
 .contentType(MediaType.APPLICATION_JSON)
 .content("{invalid json}"))
 .andExpect(status().isBadRequest());

@@ -1,9 +1,9 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ProductDto;
-import com.example.demo.entity.Product;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.service.impl.ProductServiceImpl;
+import com.example.demo.dto.UserDto;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -24,159 +24,159 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Product Service Unit Tests")
-class ProductServiceTest {
+@DisplayName("User Service Unit Tests")
+class UserServiceTest {
 
 @Mock
-private ProductRepository productRepository;
+private UserRepository userRepository;
 
 @InjectMocks
-private ProductServiceImpl productService;
+private UserServiceImpl userService;
 
-private Product testProduct;
-private ProductDto testProductDto;
+private User testUser;
+private UserDto testUserDto;
 
 @BeforeEach
 void setUp() {
-testProduct = new Product();
-testProduct.setId(1L);
+testUser = new User();
+testUser.setId(1L);
 
-testProductDto = new ProductDto();
-testProductDto.setId(1L);
+testUserDto = new UserDto();
+testUserDto.setId(1L);
 }
 
 @Test
 @DisplayName("Should return all entities when findAll is called")
 void findAll_ReturnsAllEntities() {
 // Given
-List<Product> entities = Arrays.asList(testProduct);
-when(productRepository.findAll()).thenReturn(entities);
+List<User> entities = Arrays.asList(testUser);
+when(userRepository.findAll()).thenReturn(entities);
 
 // When
-List<ProductDto> result = productService.findAll();
+List<UserDto> result = userService.findAll();
 
     // Then
     assertThat(result).hasSize(1);
-    assertThat(result.get(0).getId()).isEqualTo(testProduct.getId());
-    verify(productRepository).findAll();
+    assertThat(result.get(0).getId()).isEqualTo(testUser.getId());
+    verify(userRepository).findAll();
     }
 
     @Test
     @DisplayName("Should return empty list when no entities exist")
     void findAll_NoEntities_ReturnsEmptyList() {
     // Given
-    when(productRepository.findAll()).thenReturn(Collections.emptyList());
+    when(userRepository.findAll()).thenReturn(Collections.emptyList());
 
     // When
-    List<ProductDto> result = productService.findAll();
+    List<UserDto> result = userService.findAll();
 
         // Then
         assertThat(result).isEmpty();
-        verify(productRepository).findAll();
+        verify(userRepository).findAll();
         }
 
         @Test
         @DisplayName("Should return entity when findById is called with existing ID")
         void findById_ExistingId_ReturnsEntity() {
         // Given
-        when(productRepository.findById(anyLong())).thenReturn(Optional.of(testProduct));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
 
         // When
-        Optional<ProductDto> result = productService.findById(1L);
+        Optional<UserDto> result = userService.findById(1L);
 
             // Then
             assertThat(result).isPresent();
             assertThat(result.get().getId()).isEqualTo(1L);
-            verify(productRepository).findById(1L);
+            verify(userRepository).findById(1L);
             }
 
             @Test
             @DisplayName("Should return empty when findById is called with non-existing ID")
             void findById_NonExistingId_ReturnsEmpty() {
             // Given
-            when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
+            when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
             // When
-            Optional<ProductDto> result = productService.findById(999L);
+            Optional<UserDto> result = userService.findById(999L);
 
                 // Then
                 assertThat(result).isEmpty();
-                verify(productRepository).findById(999L);
+                verify(userRepository).findById(999L);
                 }
 
                 @Test
                 @DisplayName("Should save entity successfully when valid data is provided")
                 void save_ValidEntity_ReturnsSavedEntity() {
                 // Given
-                when(productRepository.save(any(Product.class))).thenReturn(testProduct);
+                when(userRepository.save(any(User.class))).thenReturn(testUser);
 
                 // When
-                ProductDto result = productService.save(testProductDto);
+                UserDto result = userService.save(testUserDto);
 
                 // Then
                 assertThat(result).isNotNull();
-                assertThat(result.getId()).isEqualTo(testProduct.getId());
-                verify(productRepository).save(any(Product.class));
+                assertThat(result.getId()).isEqualTo(testUser.getId());
+                verify(userRepository).save(any(User.class));
                 }
 
                 @Test
                 @DisplayName("Should update entity successfully when valid data is provided")
                 void update_ValidEntity_ReturnsUpdatedEntity() {
                 // Given
-                when(productRepository.findById(anyLong())).thenReturn(Optional.of(testProduct));
-                when(productRepository.save(any(Product.class))).thenReturn(testProduct);
+                when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
+                when(userRepository.save(any(User.class))).thenReturn(testUser);
 
                 // When
-                Optional<ProductDto> result = productService.update(1L, testProductDto);
+                Optional<UserDto> result = userService.update(1L, testUserDto);
 
                     // Then
                     assertThat(result).isPresent();
-                    verify(productRepository).findById(1L);
-                    verify(productRepository).save(any(Product.class));
+                    verify(userRepository).findById(1L);
+                    verify(userRepository).save(any(User.class));
                     }
 
                     @Test
                     @DisplayName("Should return empty when updating non-existing entity")
                     void update_NonExistingEntity_ReturnsEmpty() {
                     // Given
-                    when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
+                    when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
                     // When
-                    Optional<ProductDto> result = productService.update(999L, testProductDto);
+                    Optional<UserDto> result = userService.update(999L, testUserDto);
 
                         // Then
                         assertThat(result).isEmpty();
-                        verify(productRepository).findById(999L);
-                        verify(productRepository, never()).save(any(Product.class));
+                        verify(userRepository).findById(999L);
+                        verify(userRepository, never()).save(any(User.class));
                         }
 
                         @Test
                         @DisplayName("Should delete entity successfully when ID exists")
                         void deleteById_ExistingId_ReturnsTrue() {
                         // Given
-                        when(productRepository.existsById(anyLong())).thenReturn(true);
+                        when(userRepository.existsById(anyLong())).thenReturn(true);
 
                         // When
-                        boolean result = productService.deleteById(1L);
+                        boolean result = userService.deleteById(1L);
 
                         // Then
                         assertThat(result).isTrue();
-                        verify(productRepository).existsById(1L);
-                        verify(productRepository).deleteById(1L);
+                        verify(userRepository).existsById(1L);
+                        verify(userRepository).deleteById(1L);
                         }
 
                         @Test
                         @DisplayName("Should return false when deleting non-existing entity")
                         void deleteById_NonExistingId_ReturnsFalse() {
                         // Given
-                        when(productRepository.existsById(anyLong())).thenReturn(false);
+                        when(userRepository.existsById(anyLong())).thenReturn(false);
 
                         // When
-                        boolean result = productService.deleteById(999L);
+                        boolean result = userService.deleteById(999L);
 
                         // Then
                         assertThat(result).isFalse();
-                        verify(productRepository).existsById(999L);
-                        verify(productRepository, never()).deleteById(anyLong());
+                        verify(userRepository).existsById(999L);
+                        verify(userRepository, never()).deleteById(anyLong());
                         }
                         }

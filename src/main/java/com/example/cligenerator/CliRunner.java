@@ -22,10 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 @Component
 public class CliRunner implements CommandLineRunner {
@@ -172,26 +169,46 @@ public class CliRunner implements CommandLineRunner {
             JsonNode dependenciesNode = root.path("dependencies").path("values");
 
             System.out.println("\n--- Available dependency categories ---");
-
+            Map<Integer, JsonNode> categoryMap = new HashMap<>();
+            int index = 1;
             for (JsonNode category : dependenciesNode) {
-                String categoryName = category.path("name").asText();
-                System.out.print("Do you want to add " + categoryName + " dependencies? (yes/no): ");
-                String selectCategory = scanner.nextLine().trim();
-                boolean displayCategoryDependencies = selectCategory.isEmpty() || "yes".equalsIgnoreCase(selectCategory);
-                if (displayCategoryDependencies) {
-                    System.out.println("Here are the available dependencies in this category: ");
-                    for (JsonNode dep : category.path("values")) {
-                        String id = dep.path("id").asText();
-                        String name = dep.path("name").asText();
-                        System.out.println("- " + name + " (" + id + ")");
+                categoryMap.put(index, category);
+                System.out.println(index + ". " + category.path("name").asText());
+                index++;
+            }
+            System.out.print("Select categories by number (comma-separated): ");
+            String input = scanner.nextLine().trim();
+
+            if (!input.isEmpty()) {
+                for (String part : input.split(",")) {
+                    try {
+                        int selectedIndex = Integer.parseInt(part.trim());
+                        JsonNode category = categoryMap.get(selectedIndex);
+                        if (category == null) continue;
+
+                        System.out.println("\nDependencies in " + category.path("name").asText() + ":");
+                        for (JsonNode dep : category.path("values")) {
+                            String id = dep.path("id").asText();
+                            String name = dep.path("name").asText();
+                            System.out.println("- " + name + " (" + id + ")");
+                        }
+
+                        System.out.print("Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");
+                        String depsInput = scanner.nextLine().trim();
+                        if (!depsInput.isEmpty()) {
+                            for (String dep : depsInput.split(",")) {
+                                String depId = dep.trim();
+                                if (!dependencies.contains(depId)) {
+                                    dependencies += "," + depId;
+                                }
+                            }
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input: " + part.trim());
                     }
-                    System.out.print("Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");
-                    String deps = scanner.nextLine().trim();
-                    if (!deps.isEmpty())
-                        dependencies = dependencies + "," + deps;
                 }
             }
-
 
             /*
             System.out.print("Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");

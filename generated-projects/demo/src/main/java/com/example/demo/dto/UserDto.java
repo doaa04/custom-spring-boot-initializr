@@ -1,20 +1,15 @@
-package com.example.demo.entity;
+package com.example.demo.dto;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.*; // For annotations if you copy them here too
 
-@Entity
-@Table(name = "product")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class UserDto {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
 
 
