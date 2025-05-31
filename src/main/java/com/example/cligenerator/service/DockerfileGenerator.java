@@ -23,7 +23,7 @@ public class DockerfileGenerator extends AIGenerator {
         List<ChatRequestMessage> chatMessages = buildRequestBody(description);
         ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions(chatMessages).setModel(model);
         ChatCompletions completions = client.complete(chatCompletionsOptions);
-        System.out.printf("%s.%n", completions.getChoice().getMessage().getContent());
+        //System.out.printf("%s.%n", completions.getChoice().getMessage().getContent());
         String fullResponse = completions.getChoices().get(0).getMessage().getContent();
         return extract(fullResponse);
     }
