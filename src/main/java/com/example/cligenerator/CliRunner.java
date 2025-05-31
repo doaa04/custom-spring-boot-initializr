@@ -129,7 +129,7 @@ public class CliRunner implements CommandLineRunner {
 
         // creating a projectdescription to be passed later into concerned services
         ProjectDescription description = new ProjectDescription(
-                projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, false
+                projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, false, entityDefinitions
         );
 
         for (EntityDefinition entityDef : entityDefinitions) {
@@ -141,6 +141,11 @@ public class CliRunner implements CommandLineRunner {
         String content = dockerfileGenerator.generate(description);
         Files.writeString(dockerfilePath, content);
         System.out.println("Dockerfile generated at: " + dockerfilePath.toAbsolutePath());
+
+        // unit tests generation
+        for (EntityDefinition entityDef : entityDefinitions) {
+            //
+        }
 
 
         System.out.println("\n------------------------------------------------------------------------");

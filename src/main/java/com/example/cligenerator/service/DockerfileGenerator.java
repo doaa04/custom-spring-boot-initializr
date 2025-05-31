@@ -13,27 +13,22 @@ import com.example.cligenerator.model.ProjectDescription;
 import java.util.Arrays;
 import java.util.List;
 
-public class DockerfileGenerator {
-    private final ChatCompletionsClient client;
-    private final String model;
-
+public class DockerfileGenerator extends AIGenerator {
     public DockerfileGenerator(AzureConfig.AzureSettings settings) {
-        client = new ChatCompletionsClientBuilder()
-                .credential(new AzureKeyCredential(settings.apiKey))
-                .endpoint(settings.endpoint)
-                .buildClient();
-        model = settings.modelName;
+        super(settings);
     }
 
+    @Override
     public String generate(ProjectDescription description) {
         List<ChatRequestMessage> chatMessages = buildRequestBody(description);
         ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions(chatMessages).setModel(model);
         ChatCompletions completions = client.complete(chatCompletionsOptions);
         System.out.printf("%s.%n", completions.getChoice().getMessage().getContent());
         String fullResponse = completions.getChoices().get(0).getMessage().getContent();
-        return extractFile(fullResponse);
+        return extract(fullResponse);
     }
 
+    @Override
     public List<ChatRequestMessage> buildRequestBody(ProjectDescription description) {
         String prompt = String.format("""
             I am building a Spring Boot project named "%s" using Java %s and Spring Boot %s.
@@ -57,7 +52,8 @@ public class DockerfileGenerator {
         );
     }
 
-    public String extractFile(String responseBody) {
+    @Override
+    public String extract(String responseBody) {
         String start = "```dockerfile";
         String end = "```";
 
@@ -70,4 +66,3 @@ public class DockerfileGenerator {
         return responseBody.substring(startIndex + start.length(), endIndex).trim();
     }
 }
-

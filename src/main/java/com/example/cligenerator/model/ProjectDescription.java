@@ -19,4 +19,6 @@ public class ProjectDescription {
     private List<String> dependencies;
     private String outputDir;
     private boolean isGradle;
+
+    private List<EntityDefinition> entities;
 }
