@@ -11,10 +11,14 @@ import com.example.cligenerator.service.DockerService;
 import com.example.cligenerator.service.InitializrService;
 import com.example.cligenerator.service.TestGenerationService;
 import com.example.cligenerator.service.TemplateService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -158,11 +162,43 @@ public class CliRunner implements CommandLineRunner {
             // generation
             // since Spring Initializr doesn't support the springdoc dependency directly
 
+
+            // fetching dependencies
+            String metadataUrl = "https://start.spring.io/metadata/client";
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.getForEntity(metadataUrl, String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+            JsonNode dependenciesNode = root.path("dependencies").path("values");
+
+            System.out.println("\n--- Available dependency categories ---");
+
+            for (JsonNode category : dependenciesNode) {
+                String categoryName = category.path("name").asText();
+                System.out.print("Do you want to add " + categoryName + " dependencies? (yes/no): ");
+                String selectCategory = scanner.nextLine().trim();
+                boolean displayCategoryDependencies = selectCategory.isEmpty() || "yes".equalsIgnoreCase(selectCategory);
+                if (displayCategoryDependencies) {
+                    System.out.println("Here are the available dependencies in this category: ");
+                    for (JsonNode dep : category.path("values")) {
+                        String id = dep.path("id").asText();
+                        String name = dep.path("name").asText();
+                        System.out.println("- " + name + " (" + id + ")");
+                    }
+                    System.out.print("Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");
+                    String deps = scanner.nextLine().trim();
+                    if (!deps.isEmpty())
+                        dependencies = dependencies + "," + deps;
+                }
+            }
+
+
+            /*
             System.out.print("Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");
             String deps = scanner.nextLine().trim();
             if (!deps.isEmpty())
                 dependencies = dependencies + "," + deps;
-
+             */
             System.out.print("Enter output directory for the generated project (e.g., ./generated-projects): ");
             String outputDir = scanner.nextLine().trim();
             if (outputDir.isEmpty())
