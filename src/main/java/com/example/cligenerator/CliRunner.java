@@ -5,15 +5,10 @@ import com.example.cligenerator.model.DatabaseConfig;
 import com.example.cligenerator.model.EntityDefinition;
 import com.example.cligenerator.model.FieldDefinition;
 import com.example.cligenerator.model.ProjectDescription;
-import com.example.cligenerator.service.ApiDocumentationService;
-import com.example.cligenerator.service.CodeGeneratorService;
-import com.example.cligenerator.service.ConfigurationService;
-import com.example.cligenerator.service.DockerService;
-import com.example.cligenerator.service.InitializrService;
-import com.example.cligenerator.service.TestGenerationService;
-import com.example.cligenerator.service.TemplateService;
+import com.example.cligenerator.service.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tools.ant.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -27,12 +22,12 @@ import java.util.*;
 
 @Component
 public class CliRunner implements CommandLineRunner {
-
     private static final Logger logger = LoggerFactory.getLogger(CliRunner.class);
     private final InitializrService initializrService;
     private final CodeGeneratorService codeGeneratorService;
     private final TestGenerationService testGenerationService;
     private final DockerService dockerService;
+    private final GitlabService gitlabService;
     private final TemplateService templateService;
     private final ApiDocumentationService apiDocumentationService;
     private final ConfigurationService configurationService;
@@ -42,6 +37,7 @@ public class CliRunner implements CommandLineRunner {
                      CodeGeneratorService codeGeneratorService,
                      TestGenerationService testGenerationService,
                      DockerService dockerService,
+                     GitlabService gitlabService,
                      TemplateService templateService,
                      ApiDocumentationService apiDocumentationService,
                      ConfigurationService configurationService) {
@@ -49,6 +45,7 @@ public class CliRunner implements CommandLineRunner {
         this.codeGeneratorService = codeGeneratorService;
         this.testGenerationService = testGenerationService;
         this.dockerService = dockerService;
+        this.gitlabService = gitlabService;
         this.templateService = templateService;
         this.apiDocumentationService = apiDocumentationService;
         this.configurationService = configurationService;
@@ -295,13 +292,17 @@ public class CliRunner implements CommandLineRunner {
             String generateDocker = scanner.nextLine().trim();
             boolean includeDocker = generateDocker.isEmpty() || "yes".equalsIgnoreCase(generateDocker);
 
+            System.out.print("Generate Gitlab configuration? (yes/no, default: yes): ");
+            String generateGitlab = scanner.nextLine().trim();
+            boolean includeGitlab = generateGitlab.isEmpty() || "yes".equalsIgnoreCase(generateGitlab);
+
             System.out.print("Generate comprehensive tests? (yes/no, default: yes): ");
             String generateTests = scanner.nextLine().trim();
             boolean includeTests = generateTests.isEmpty() || "yes".equalsIgnoreCase(generateTests);
 
             // creating a project description instance to be passed later into concerned services
             ProjectDescription description = new ProjectDescription(
-                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), buildTool, outputDir, false, entityDefinitions
+                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, buildTool, entityDefinitions, databaseConfig
             );
 
             // --- Generation ---
@@ -347,6 +348,12 @@ public class CliRunner implements CommandLineRunner {
                 if (includeDocker) {
                     System.out.println("Generating Docker configuration...");
                     dockerService.generateDockerConfiguration(projectBasePath, artifactId, javaVersion, databaseConfig);
+                }
+
+                // Generate Gitlab configuration if requested
+                if (includeGitlab) {
+                    System.out.println("Generating Gitlab configuration...");
+                    gitlabService.generateGitlabConfiguration(projectBasePath, description);
                 }
 
                 // Generate tests if requested

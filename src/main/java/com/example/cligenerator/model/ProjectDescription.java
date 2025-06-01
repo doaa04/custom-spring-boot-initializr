@@ -19,7 +19,6 @@ public class ProjectDescription {
     private List<String> dependencies;
     private String outputDir;
     private String buildTool;
-    private boolean isGradle;
-
     private List<EntityDefinition> entities;
+    private DatabaseConfig databaseConfig;
 }

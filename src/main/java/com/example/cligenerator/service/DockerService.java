@@ -14,7 +14,6 @@ import java.util.Map;
  */
 @Service
 public class DockerService {
-
     private final TemplateService templateService;
 
     public DockerService(TemplateService templateService) {
