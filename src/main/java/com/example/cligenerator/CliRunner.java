@@ -4,6 +4,7 @@ import com.example.cligenerator.exception.GenerationException;
 import com.example.cligenerator.model.DatabaseConfig;
 import com.example.cligenerator.model.EntityDefinition;
 import com.example.cligenerator.model.FieldDefinition;
+import com.example.cligenerator.model.ProjectDescription;
 import com.example.cligenerator.service.ApiDocumentationService;
 import com.example.cligenerator.service.CodeGeneratorService;
 import com.example.cligenerator.service.ConfigurationService;
@@ -216,6 +217,14 @@ public class CliRunner implements CommandLineRunner {
             if (!deps.isEmpty())
                 dependencies = dependencies + "," + deps;
              */
+
+            System.out.print("Choose build tool (maven/gradle, default: maven): ");
+            String buildTool = scanner.nextLine().trim().toLowerCase();
+            if (!buildTool.equals("gradle") && !buildTool.equals("maven")) {
+                buildTool = "maven"; // default
+            }
+
+
             System.out.print("Enter output directory for the generated project (e.g., ./generated-projects): ");
             String outputDir = scanner.nextLine().trim();
             if (outputDir.isEmpty())
@@ -290,6 +299,11 @@ public class CliRunner implements CommandLineRunner {
             String generateTests = scanner.nextLine().trim();
             boolean includeTests = generateTests.isEmpty() || "yes".equalsIgnoreCase(generateTests);
 
+            // creating a project description instance to be passed later into concerned services
+            ProjectDescription description = new ProjectDescription(
+                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), buildTool, outputDir, false, entityDefinitions
+            );
+
             // --- Generation ---
             System.out.println("\nStarting project generation...");
             logger.info("Generating project: {}", projectName);
@@ -299,7 +313,7 @@ public class CliRunner implements CommandLineRunner {
                 projectBasePath = initializrService.downloadAndUnzipProject(
                         projectName, groupId, artifactId, packageName,
                         javaVersion, springBootVersion, dependencies,
-                        outputDir);
+                        buildTool, outputDir);
             } catch (Exception e) {
                 throw new GenerationException("Spring Initializr", "Failed to generate base project",
                         "Error downloading from Spring Initializr: " + e.getMessage(), e);
@@ -323,7 +337,7 @@ public class CliRunner implements CommandLineRunner {
                 } // Generate comprehensive API documentation if requested
                 if (generateOpenApi) {
                     System.out.println("Adding OpenAPI dependency...");
-                    codeGeneratorService.addOpenApiDependency(projectBasePath);
+                    codeGeneratorService.addOpenApiDependency(projectBasePath, description);
                     System.out.println("Generating comprehensive API documentation...");
                     apiDocumentationService.generateApiDocumentation(projectBasePath, packageName, projectName,
                             entityDefinitions);

@@ -25,10 +25,10 @@ public class InitializrService {
     public Path downloadAndUnzipProject(
             String name, String groupId, String artifactId, String packageName,
             String javaVersion, String springBootVersion, String dependencies,
-            String outputDir) throws IOException {
+            String buildTool, String outputDir) throws IOException {
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(INITIALIZR_URL)
-                .queryParam("type", "maven-project") // Or gradle-project
+                .queryParam("type", buildTool+"-project")
                 .queryParam("language", "java")
                 .queryParam("platformVersion", springBootVersion) // Renamed from bootVersion
                 .queryParam("packaging", "jar")

@@ -18,6 +18,7 @@ public class ProjectDescription {
     private String springBootVersion;
     private List<String> dependencies;
     private String outputDir;
+    private String buildTool;
     private boolean isGradle;
 
     private List<EntityDefinition> entities;

@@ -2,6 +2,7 @@ package com.example.cligenerator.service;
 
 import com.example.cligenerator.model.DatabaseConfig;
 import com.example.cligenerator.model.EntityDefinition;
+import com.example.cligenerator.model.ProjectDescription;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -89,7 +90,13 @@ public class CodeGeneratorService {
         System.out.println("Generated OpenAPI configuration: " + configPath.toAbsolutePath());
     }
 
-    public void addOpenApiDependency(Path projectBasePath) throws IOException {
+    public void addOpenApiDependency(Path projectBasePath, ProjectDescription description) throws IOException {
+        String buildTool = description.getBuildTool().toLowerCase();
+        if (buildTool.equals("maven")) addMavenDependency(projectBasePath);
+        else addGradleDependency(projectBasePath);
+    }
+
+    public void addMavenDependency(Path projectBasePath) throws IOException {
         Path pomPath = projectBasePath.resolve("pom.xml");
 
         if (!Files.exists(pomPath)) {
@@ -116,6 +123,55 @@ public class CodeGeneratorService {
             throw new IOException("Could not find </dependencies> tag in pom.xml");
         }
     }
+
+    private void addGradleDependency(Path projectBasePath) throws IOException {
+        Path buildGradlePath = projectBasePath.resolve("build.gradle");
+
+        if (!Files.exists(buildGradlePath)) {
+            throw new IOException("build.gradle not found in generated project");
+        }
+
+        String gradleContent = Files.readString(buildGradlePath);
+        String dependencyLine = "implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'";
+
+        if (!gradleContent.contains("springdoc-openapi-starter-webmvc-ui")) {
+            gradleContent = gradleContent.replaceFirst("(?s)dependencies\\s*\\{", "dependencies {\n    " + dependencyLine);
+            Files.writeString(buildGradlePath, gradleContent);
+        }
+    }
+
+    /*
+
+    public void addOpenApiDependency(Path projectBasePath, ProjectDescription description) throws IOException {
+        if (!description.getBuildTool().equals("gradle")) return;
+        Path pomPath = projectBasePath.resolve("pom.xml");
+
+        if (!Files.exists(pomPath)) {
+            throw new IOException("pom.xml not found in generated project");
+        }
+
+        // Read the existing pom.xml
+        String pomContent = Files.readString(pomPath);
+
+        // OpenAPI dependency to add
+        String openApiDependency = """
+                <dependency>
+                	<groupId>org.springdoc</groupId>
+                	<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                	<version>2.2.0</version>
+                </dependency>""";
+
+        // Find the end of dependencies section and insert before it
+        if (pomContent.contains("</dependencies>")) {
+            pomContent = pomContent.replace("</dependencies>", openApiDependency + "\n\t</dependencies>");
+            Files.writeString(pomPath, pomContent);
+            System.out.println("Added OpenAPI dependency to: " + pomPath.toAbsolutePath());
+        } else {
+            throw new IOException("Could not find </dependencies> tag in pom.xml");
+        }
+    }
+
+     */
 
     private void generateFile(Map<String, Object> dataModel, String templateName, Path outputPath)
             throws IOException, TemplateException {
