@@ -10,6 +10,8 @@ public class EntityDefinition {
     private List<FieldDefinition> fields = new ArrayList<>();
     private FieldDefinition idField;
 
+    public EntityDefinition() {}
+
     public EntityDefinition(String name) {
         this.name = name;
         this.nameLowercase = name.toLowerCase();

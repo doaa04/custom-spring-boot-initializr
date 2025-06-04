@@ -1,8 +1,11 @@
 package com.example.cligenerator.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class FieldDefinition {
     private String name;
     private String type; // e.g., "String", "Long", "Integer", "LocalDate"
+    @JsonProperty("isId")
     private boolean isId = false; // To mark the ID field
 
     public FieldDefinition(String name, String type, boolean isId) {

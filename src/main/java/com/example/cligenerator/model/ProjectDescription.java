@@ -21,4 +21,7 @@ public class ProjectDescription {
     private String buildTool;
     private List<EntityDefinition> entities;
     private DatabaseConfig databaseConfig;
+    private String githubRemoteUrl;
+    private boolean isSupportingAI;
+    private String entitiesDescription;
 }

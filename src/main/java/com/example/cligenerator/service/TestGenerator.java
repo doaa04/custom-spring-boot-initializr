@@ -7,6 +7,16 @@ import com.example.cligenerator.model.ProjectDescription;
 import java.util.List;
 
 public class TestGenerator extends AIGenerator {
+    @Override
+    protected String getStartDelimiter() {
+        return "";
+    }
+
+    @Override
+    protected String getEndDelimiter() {
+        return "";
+    }
+
     public TestGenerator(AzureConfig.AzureSettings settings) {
         super(settings);
     }
@@ -22,7 +32,7 @@ public class TestGenerator extends AIGenerator {
     }
 
     @Override
-    public String extract(String responseBody) {
+    public String extract(String responseBody, String start, String end) {
         return "";
     }
 }

@@ -6,9 +6,9 @@ import com.example.cligenerator.model.EntityDefinition;
 import com.example.cligenerator.model.FieldDefinition;
 import com.example.cligenerator.model.ProjectDescription;
 import com.example.cligenerator.service.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.tools.ant.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -28,6 +28,9 @@ public class CliRunner implements CommandLineRunner {
     private final TestGenerationService testGenerationService;
     private final DockerService dockerService;
     private final GitlabService gitlabService;
+    private final GitService gitService;
+    private final DependencyCheckService dependencyCheckService;
+    private final EntityGenerationService entityGenerationService;
     private final TemplateService templateService;
     private final ApiDocumentationService apiDocumentationService;
     private final ConfigurationService configurationService;
@@ -38,6 +41,9 @@ public class CliRunner implements CommandLineRunner {
                      TestGenerationService testGenerationService,
                      DockerService dockerService,
                      GitlabService gitlabService,
+                     GitService gitService,
+                     DependencyCheckService dependencyCheckService,
+                     EntityGenerationService entityGenerationService,
                      TemplateService templateService,
                      ApiDocumentationService apiDocumentationService,
                      ConfigurationService configurationService) {
@@ -46,6 +52,9 @@ public class CliRunner implements CommandLineRunner {
         this.testGenerationService = testGenerationService;
         this.dockerService = dockerService;
         this.gitlabService = gitlabService;
+        this.gitService = gitService;
+        this.dependencyCheckService = dependencyCheckService;
+        this.entityGenerationService = entityGenerationService;
         this.templateService = templateService;
         this.apiDocumentationService = apiDocumentationService;
         this.configurationService = configurationService;
@@ -227,66 +236,6 @@ public class CliRunner implements CommandLineRunner {
             if (outputDir.isEmpty())
                 outputDir = "./generated-projects";
 
-            // --- Entity Definitions ---
-            List<EntityDefinition> entityDefinitions = new ArrayList<>();
-            boolean addMoreEntities = true;
-            while (addMoreEntities) {
-                System.out.println("\n--- Define Entity ---");
-                System.out.print("Enter entity name (e.g., Product, User - singular, capitalized): ");
-                String entityNameInput = scanner.nextLine().trim();
-                if (entityNameInput.isEmpty()) {
-                    System.out.println("Entity name cannot be empty. Skipping this entity.");
-                    continue;
-                }
-                EntityDefinition currentEntity = new EntityDefinition(entityNameInput);
-
-                // Add default ID field
-                currentEntity.addField(new FieldDefinition("id", "Long", true));
-
-                boolean addMoreFields = true;
-                while (addMoreFields) {
-                    System.out.print(
-                            "Enter field name (or type 'done' if no more fields for " + currentEntity.getName()
-                                    + "): ");
-                    String fieldName = scanner.nextLine().trim();
-                    if ("done".equalsIgnoreCase(fieldName)) {
-                        addMoreFields = false;
-                        continue;
-                    }
-                    if (fieldName.isEmpty() || fieldName.equalsIgnoreCase("id")) {
-                        System.out.println("Invalid field name or 'id' (already added). Try again.");
-                        continue;
-                    }
-
-                    System.out.print(
-                            "Enter field type (String, Integer, Long, Double, Boolean, LocalDate, BigDecimal - default: String): ");
-                    String fieldType = scanner.nextLine().trim();
-                    if (fieldType.isEmpty())
-                        fieldType = "String";
-                    // Basic validation for common types
-                    List<String> validTypes = Arrays.asList("String", "Integer", "Long", "Double", "Boolean",
-                            "LocalDate",
-                            "BigDecimal");
-                    if (!validTypes.contains(fieldType)) {
-                        System.out.println(
-                                "Warning: Field type '" + fieldType
-                                        + "' might require additional imports/configuration.");
-                    }
-
-                    currentEntity.addField(new FieldDefinition(fieldName, fieldType, false));
-                }
-                entityDefinitions.add(currentEntity);
-
-                System.out.print("Add another entity? (yes/no, default: no): ");
-                String addAnotherEntityResponse = scanner.nextLine().trim();
-                addMoreEntities = "yes".equalsIgnoreCase(addAnotherEntityResponse);
-            }
-
-            if (entityDefinitions.isEmpty()) {
-                throw new GenerationException("Entity Configuration", "No entities defined",
-                        "At least one entity is required for code generation");
-            }
-
             // --- Additional Features ---
             System.out.print("Generate Docker configuration? (yes/no, default: yes): ");
             String generateDocker = scanner.nextLine().trim();
@@ -300,10 +249,105 @@ public class CliRunner implements CommandLineRunner {
             String generateTests = scanner.nextLine().trim();
             boolean includeTests = generateTests.isEmpty() || "yes".equalsIgnoreCase(generateTests);
 
+            System.out.print("Push this project to a remote Git repository? (yes/no, default: yes): ");
+            String setUpGit = scanner.nextLine().trim();
+            boolean pushToGit = setUpGit.isEmpty() || "yes".equalsIgnoreCase(setUpGit);
+            String remoteUrl = "";
+            if (pushToGit) {
+                System.out.print("Enter your remote Git repository URL (e.g., https://token@github.com/user/my-repo.git): ");
+                remoteUrl = scanner.nextLine().trim();
+            }
+
+            // --- Entity Definitions ---
+            System.out.print("Would you like to use AI to generate your project from a description? (yes to use AI / no to enter entities manually, default: yes): ");
+            String useAI = scanner.nextLine().trim();
+            boolean enableAI = useAI.isEmpty() || "yes".equalsIgnoreCase(useAI);
+            List<EntityDefinition> entityDefinitions = new ArrayList<>();
+            String entitiesDescription = "";
+
             // creating a project description instance to be passed later into concerned services
             ProjectDescription description = new ProjectDescription(
-                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, buildTool, entityDefinitions, databaseConfig
+                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, buildTool, entityDefinitions, databaseConfig, remoteUrl, enableAI, entitiesDescription
             );
+
+            if (enableAI) {
+                System.out.print("Describe your project (e.g. 'A school management system with students and teachers'): ");
+                entitiesDescription = scanner.nextLine().trim();
+                description.setEntitiesDescription(entitiesDescription);
+                String entitiesJson = entityGenerationService.generate(description);
+                System.out.println(entitiesJson);
+                ObjectMapper objectMapper = new ObjectMapper();
+                entityDefinitions = mapper.readValue(entitiesJson, new TypeReference<List<EntityDefinition>>() {});
+            } else {
+                boolean addMoreEntities = true;
+                while (addMoreEntities) {
+                    System.out.println("\n--- Define Entity ---");
+                    System.out.print("Enter entity name (e.g., Product, User - singular, capitalized): ");
+                    String entityNameInput = scanner.nextLine().trim();
+                    if (entityNameInput.isEmpty()) {
+                        System.out.println("Entity name cannot be empty. Skipping this entity.");
+                        continue;
+                    }
+                    EntityDefinition currentEntity = new EntityDefinition(entityNameInput);
+
+                    // Add default ID field
+                    currentEntity.addField(new FieldDefinition("id", "Long", true));
+
+                    boolean addMoreFields = true;
+                    while (addMoreFields) {
+                        System.out.print(
+                                "Enter field name (or type 'done' if no more fields for " + currentEntity.getName()
+                                        + "): ");
+                        String fieldName = scanner.nextLine().trim();
+                        if ("done".equalsIgnoreCase(fieldName)) {
+                            addMoreFields = false;
+                            continue;
+                        }
+                        if (fieldName.isEmpty() || fieldName.equalsIgnoreCase("id")) {
+                            System.out.println("Invalid field name or 'id' (already added). Try again.");
+                            continue;
+                        }
+
+                        System.out.print(
+                                "Enter field type (String, Integer, Long, Double, Boolean, LocalDate, BigDecimal - default: String): ");
+                        String fieldType = scanner.nextLine().trim();
+                        if (fieldType.isEmpty())
+                            fieldType = "String";
+                        // Basic validation for common types
+                        List<String> validTypes = Arrays.asList("String", "Integer", "Long", "Double", "Boolean",
+                                "LocalDate",
+                                "BigDecimal");
+                        if (!validTypes.contains(fieldType)) {
+                            System.out.println(
+                                    "Warning: Field type '" + fieldType
+                                            + "' might require additional imports/configuration.");
+                        }
+
+                        currentEntity.addField(new FieldDefinition(fieldName, fieldType, false));
+                    }
+                    entityDefinitions.add(currentEntity);
+
+                    System.out.print("Add another entity? (yes/no, default: no): ");
+                    String addAnotherEntityResponse = scanner.nextLine().trim();
+                    addMoreEntities = "yes".equalsIgnoreCase(addAnotherEntityResponse);
+                }
+                if (entityDefinitions.isEmpty()) {
+                    throw new GenerationException("Entity Configuration", "No entities defined",
+                            "At least one entity is required for code generation");
+                }
+            }
+
+            description.setEntities(entityDefinitions);
+
+            // dependency ai check
+            System.out.println("\n--- Dependency analysis ---");
+            boolean areCompatible = dependencyCheckService.doMatch(description);
+            if (!areCompatible) {
+                System.out.print("Would you like to proceed with suggested configuration? (yes/no, default: no): ");
+            }
+
+            System.out.print("wait");
+            String wait = scanner.nextLine().trim();
 
             // --- Generation ---
             System.out.println("\nStarting project generation...");
@@ -363,6 +407,13 @@ public class CliRunner implements CommandLineRunner {
                         testGenerationService.generateTestsForEntity(projectBasePath, packageName, entityDef);
                     }
                 }
+
+                if (pushToGit) {
+                    System.out.println("Setting up GitHub repository...");
+                    gitService.initPush(projectBasePath, description);
+                }
+
+
 
             } catch (Exception e) {
                 throw new GenerationException("Code Generation", "Failed to generate project files",

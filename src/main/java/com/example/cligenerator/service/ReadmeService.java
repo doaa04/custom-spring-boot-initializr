@@ -4,42 +4,44 @@ import com.azure.ai.inference.models.ChatRequestMessage;
 import com.azure.ai.inference.models.ChatRequestSystemMessage;
 import com.example.cligenerator.config.AzureConfig;
 import com.example.cligenerator.model.ProjectDescription;
+import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class DockerfileGenerator extends AIGenerator {
-    public DockerfileGenerator(AzureConfig.AzureSettings settings) {
+@Service
+public class ReadmeService extends AIGenerator {
+    public ReadmeService(AzureConfig.AzureSettings settings) {
         super(settings);
     }
 
     @Override
     public List<ChatRequestMessage> buildRequestBody(ProjectDescription description) {
         String prompt = String.format("""
-            I am building a Spring Boot project named "%s" using Java %s and Spring Boot %s.
-            The base package is "%s".
-            Generate a Dockerfile that:
-            - Builds the project using Maven
-            - Runs it using `java -jar`
-            - Uses a JDK base image
+            Generate a professional and detailed README.md file for a Spring Boot project.
+            
+            Project details:
+            - Name: %s
+            - Java version: %s
+            - Spring Boot version: %s
+            - Base package: %s
             """,
                 description.getProjectName(),
                 description.getJavaVersion(),
                 description.getSpringBootVersion(),
                 description.getPackageName()
         );
-        return Arrays.asList(
-                new ChatRequestSystemMessage("You are an expert in DevOps."),
-                new ChatRequestSystemMessage(prompt),
-                new ChatRequestSystemMessage("- project name: " + description.getProjectName()),
 
-                new ChatRequestSystemMessage("The dockerfile must be wrapped around ```dockerfile and ```.")
+        return Arrays.asList(
+                new ChatRequestSystemMessage("You are an expert software architect and technical writer."),
+                new ChatRequestSystemMessage(prompt),
+                new ChatRequestSystemMessage("The readme file must be wrapped around " + getStartDelimiter() + " and " + getEndDelimiter())
         );
     }
 
     @Override
     protected String getStartDelimiter() {
-        return "```dockerfile";
+        return "```readme";
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.example.cligenerator.service;
 
 import com.example.cligenerator.model.ProjectDescription;
-import org.apache.tools.ant.Project;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -10,12 +9,6 @@ import java.nio.file.Path;
 
 @Service
 public class GitlabService {
-    private final TemplateService templateService;
-
-    public GitlabService(TemplateService templateService) {
-        this.templateService = templateService;
-    }
-
     public void generateGitlabConfiguration(Path projectPath, ProjectDescription description) {
         String artifactId = description.getArtifactId();
         String javaVersion = description.getJavaVersion();
