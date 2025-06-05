@@ -251,9 +251,24 @@ public class CliRunner implements CommandLineRunner {
             boolean pushToGit = setUpGit.isEmpty() || "yes".equalsIgnoreCase(setUpGit);
             String remoteUrl = "";
             if (pushToGit) {
-                System.out.print("Enter your remote Git repository URL (e.g., https://token@github.com/user/my-repo.git): ");
-                remoteUrl = scanner.nextLine().trim();
+                while (true) {
+                    System.out.print("Enter your remote Git repository URL (e.g., https://token@github.com/user/my-repo.git): ");
+                    remoteUrl = scanner.nextLine().trim();
+
+                    if (remoteUrl.isEmpty()) {
+                        System.out.println("Remote URL cannot be empty. Please try again.");
+                        continue;
+                    }
+
+                    // Basic validation
+                    boolean isValidHttps = remoteUrl.startsWith("https://") && remoteUrl.endsWith(".git");
+                    boolean isValidSsh = remoteUrl.matches("^git@[^\\s:]+:[^\\s]+\\.git$");
+
+                    if (isValidHttps || isValidSsh) break;
+                    else System.out.println("Invalid Git URL. Make sure it starts with 'https://' and ends with '.git', or follows the SSH format.");
+                }
             }
+
 
             // --- Entity Definitions ---
             System.out.print("Would you like to use AI to generate your project from a description? (yes to use AI / no to enter entities manually, default: yes): ");

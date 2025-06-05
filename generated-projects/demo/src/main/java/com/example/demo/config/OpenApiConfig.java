@@ -62,17 +62,32 @@ private List<Server> serversList() {
     }    private List<Tag> tagsList() {
         return Arrays.asList(
             new Tag()
-            .name("book")
-            .description("Operations related to Book management"),
+            .name("patient")
+            .description("Operations related to Patient management"),
             new Tag()
-            .name("author")
-            .description("Operations related to Author management"),
+            .name("doctor")
+            .description("Operations related to Doctor management"),
             new Tag()
-            .name("user")
-            .description("Operations related to User management"),
+            .name("appointment")
+            .description("Operations related to Appointment management"),
             new Tag()
-            .name("review")
-            .description("Operations related to Review management")
+            .name("prescription")
+            .description("Operations related to Prescription management"),
+            new Tag()
+            .name("medicalrecord")
+            .description("Operations related to MedicalRecord management"),
+            new Tag()
+            .name("department")
+            .description("Operations related to Department management"),
+            new Tag()
+            .name("room")
+            .description("Operations related to Room management"),
+            new Tag()
+            .name("staff")
+            .description("Operations related to Staff management"),
+            new Tag()
+            .name("bill")
+            .description("Operations related to Bill management")
         );
         }
         }

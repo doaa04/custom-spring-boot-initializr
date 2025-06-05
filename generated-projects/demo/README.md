@@ -1,57 +1,38 @@
 # my-api
 
-An e-bookstore management system built with Spring Boot 3.1.5. The application handles books, authors, and user reviews to enable efficient e-bookstore operations.
+A hospital management platform designed to digitalize healthcare services, enabling efficient patient care, streamlined administration, and data-driven medical operations.
 
 ## Table of Contents
 
 - [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Configuration](#configuration)
-  - [Running the Application](#running-the-application)
-- [Entities](#entities)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Database Configuration](#database-configuration)
+- [How to Run](#how-to-run)
 - [API Endpoints](#api-endpoints)
-- [Testing](#testing)
+- [Entities](#entities)
+- [Actuator Endpoints](#actuator-endpoints)
 - [License](#license)
 
 ---
 
 ## Features
 
-- Manage books and authors.
-- User registration and authentication.
-- Users can post reviews for books.
-- RESTful API design.
-- PostgreSQL integration.
-- Input validation.
-- Containerized testing using Testcontainers.
+- RESTful APIs for managing hospital operations
+- Entity management for Patients, Doctors, Appointments, Prescriptions, Medical Records, Departments, Rooms, Staff, and Bills
+- Data validation and persistence using JPA
+- Health and metrics monitoring with Spring Boot Actuator
+- Lombok for boilerplate code reduction
 
----
+## Tech Stack
 
-## Technology Stack
+- Java 17
+- Spring Boot 3.1.5
+- Spring Web
+- Spring Data JPA
+- Lombok
+- MySQL
+- Spring Boot Actuator
+- Bean Validation (Jakarta Validation)
 
-- **Java:** 17
-- **Spring Boot:** 3.1.5
-- **Dependencies:**
-  - Spring Web
-  - Spring Data JPA
-  - Lombok
-  - Validation (Jakarta Bean Validation)
-  - PostgreSQL Driver
-  - Testcontainers (for integration testing)
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Java 17+
-- Maven 3.9+
-- Docker (for Testcontainers in integration testing)
-- PostgreSQL running locally
-
-### Configuration
-
-Create or modify `src/main/resources/application.properties`:
+## Project Structure
