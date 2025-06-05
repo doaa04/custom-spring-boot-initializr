@@ -62,11 +62,17 @@ private List<Server> serversList() {
     }    private List<Tag> tagsList() {
         return Arrays.asList(
             new Tag()
+            .name("book")
+            .description("Operations related to Book management"),
+            new Tag()
             .name("author")
             .description("Operations related to Author management"),
             new Tag()
-            .name("book")
-            .description("Operations related to Book management")
+            .name("user")
+            .description("Operations related to User management"),
+            new Tag()
+            .name("review")
+            .description("Operations related to Review management")
         );
         }
         }

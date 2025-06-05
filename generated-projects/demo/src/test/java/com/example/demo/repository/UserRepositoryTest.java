@@ -1,6 +1,6 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.Author;
+import com.example.demo.entity.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,47 +17,47 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@DisplayName("Author Repository Tests")
-class AuthorRepositoryTest {
+@DisplayName("User Repository Tests")
+class UserRepositoryTest {
 
 @Autowired
 private TestEntityManager entityManager;
 
 @Autowired
-private AuthorRepository authorRepository;
+private UserRepository userRepository;
 
-private Author testAuthor;
+private User testUser;
 
 @BeforeEach
 void setUp() {
-testAuthor = new Author();
-            testAuthor.setFirstName("testFirstName");
-            testAuthor.setLastName("testLastName");
-            testAuthor.setBio("testBio");
+testUser = new User();
+            testUser.setUsername("testUsername");
+            testUser.setEmail("testEmail");
+            testUser.setPasswordHash("testPasswordHash");
 }
 
 @Test
 @DisplayName("Should find entity by ID when entity exists")
 void findById_ExistingEntity_ReturnsEntity() {
 // Given
-Author savedEntity = entityManager.persistAndFlush(testAuthor);
+User savedEntity = entityManager.persistAndFlush(testUser);
 
 // When
-Optional<Author> result = authorRepository.findById(savedEntity.getId());
+Optional<User> result = userRepository.findById(savedEntity.getId());
 
 // Then
 assertThat(result).isPresent();
 assertThat(result.get().getId()).isEqualTo(savedEntity.getId());
-        assertThat(result.get().getFirstName()).isEqualTo(testAuthor.getFirstName());
-        assertThat(result.get().getLastName()).isEqualTo(testAuthor.getLastName());
-        assertThat(result.get().getBio()).isEqualTo(testAuthor.getBio());
+        assertThat(result.get().getUsername()).isEqualTo(testUser.getUsername());
+        assertThat(result.get().getEmail()).isEqualTo(testUser.getEmail());
+        assertThat(result.get().getPasswordHash()).isEqualTo(testUser.getPasswordHash());
 }
 
 @Test
 @DisplayName("Should return empty when finding by non-existing ID")
 void findById_NonExistingEntity_ReturnsEmpty() {
 // When
-Optional<Author> result = authorRepository.findById(999L);
+Optional<User> result = userRepository.findById(999L);
 
 // Then
 assertThat(result).isEmpty();
@@ -67,47 +67,47 @@ assertThat(result).isEmpty();
 @DisplayName("Should save entity successfully")
 void save_ValidEntity_ReturnsSavedEntity() {
 // When
-Author savedEntity = authorRepository.save(testAuthor);
+User savedEntity = userRepository.save(testUser);
 
 // Then
 assertThat(savedEntity.getId()).isNotNull();
-        assertThat(savedEntity.getFirstName()).isEqualTo(testAuthor.getFirstName());
-        assertThat(savedEntity.getLastName()).isEqualTo(testAuthor.getLastName());
-        assertThat(savedEntity.getBio()).isEqualTo(testAuthor.getBio());
+        assertThat(savedEntity.getUsername()).isEqualTo(testUser.getUsername());
+        assertThat(savedEntity.getEmail()).isEqualTo(testUser.getEmail());
+        assertThat(savedEntity.getPasswordHash()).isEqualTo(testUser.getPasswordHash());
 }
 
 @Test
 @DisplayName("Should update entity successfully")
 void save_UpdateExistingEntity_ReturnsUpdatedEntity() {
 // Given
-Author savedEntity = entityManager.persistAndFlush(testAuthor);
+User savedEntity = entityManager.persistAndFlush(testUser);
 entityManager.detach(savedEntity);
 
-            savedEntity.setFirstName("updatedFirstName");
-            savedEntity.setLastName("updatedLastName");
-            savedEntity.setBio("updatedBio");
+            savedEntity.setUsername("updatedUsername");
+            savedEntity.setEmail("updatedEmail");
+            savedEntity.setPasswordHash("updatedPasswordHash");
 
 // When
-Author updatedEntity = authorRepository.save(savedEntity);
+User updatedEntity = userRepository.save(savedEntity);
 
 // Then
 assertThat(updatedEntity.getId()).isEqualTo(savedEntity.getId());
-        assertThat(updatedEntity.getFirstName()).isEqualTo(savedEntity.getFirstName());
-        assertThat(updatedEntity.getLastName()).isEqualTo(savedEntity.getLastName());
-        assertThat(updatedEntity.getBio()).isEqualTo(savedEntity.getBio());
+        assertThat(updatedEntity.getUsername()).isEqualTo(savedEntity.getUsername());
+        assertThat(updatedEntity.getEmail()).isEqualTo(savedEntity.getEmail());
+        assertThat(updatedEntity.getPasswordHash()).isEqualTo(savedEntity.getPasswordHash());
 }
 
 @Test
 @DisplayName("Should delete entity successfully")
 void deleteById_ExistingEntity_DeletesEntity() {
 // Given
-Author savedEntity = entityManager.persistAndFlush(testAuthor);
+User savedEntity = entityManager.persistAndFlush(testUser);
 
 // When
-authorRepository.deleteById(savedEntity.getId());
+userRepository.deleteById(savedEntity.getId());
 
 // Then
-Optional<Author> result = authorRepository.findById(savedEntity.getId());
+Optional<User> result = userRepository.findById(savedEntity.getId());
 assertThat(result).isEmpty();
 }
 
@@ -115,16 +115,16 @@ assertThat(result).isEmpty();
 @DisplayName("Should return all entities")
 void findAll_ReturnsAllEntities() {
 // Given
-Author entity1 = entityManager.persistAndFlush(testAuthor);
+User entity1 = entityManager.persistAndFlush(testUser);
 
-Author entity2 = new Author();
-            entity2.setFirstName("anotherFirstName");
-            entity2.setLastName("anotherLastName");
-            entity2.setBio("anotherBio");
+User entity2 = new User();
+            entity2.setUsername("anotherUsername");
+            entity2.setEmail("anotherEmail");
+            entity2.setPasswordHash("anotherPasswordHash");
 entityManager.persistAndFlush(entity2);
 
 // When
-List<Author> entities = authorRepository.findAll();
+List<User> entities = userRepository.findAll();
 
 // Then
 assertThat(entities).hasSize(2);
@@ -136,16 +136,16 @@ assertThat(entities).extracting("id").contains(entity1.getId(), entity2.getId())
 void findAll_WithPageable_ReturnsPagedResult() {
 // Given
 for (int i = 0; i < 5; i++) {
-Author entity = new Author();
-            entity.setFirstName("testFirstName" + i);
-            entity.setLastName("testLastName" + i);
-            entity.setBio("testBio" + i);
+User entity = new User();
+            entity.setUsername("testUsername" + i);
+            entity.setEmail("testEmail" + i);
+            entity.setPasswordHash("testPasswordHash" + i);
 entityManager.persistAndFlush(entity);
 }
 
 // When
 Pageable pageable = PageRequest.of(0, 3);
-Page<Author> page = authorRepository.findAll(pageable);
+Page<User> page = userRepository.findAll(pageable);
 
 // Then
 assertThat(page.getContent()).hasSize(3);
@@ -157,10 +157,10 @@ assertThat(page.getTotalPages()).isEqualTo(2);
 @DisplayName("Should check if entity exists by ID")
 void existsById_ExistingEntity_ReturnsTrue() {
 // Given
-Author savedEntity = entityManager.persistAndFlush(testAuthor);
+User savedEntity = entityManager.persistAndFlush(testUser);
 
 // When
-boolean exists = authorRepository.existsById(savedEntity.getId());
+boolean exists = userRepository.existsById(savedEntity.getId());
 
 // Then
 assertThat(exists).isTrue();
@@ -170,7 +170,7 @@ assertThat(exists).isTrue();
 @DisplayName("Should return false when entity does not exist")
 void existsById_NonExistingEntity_ReturnsFalse() {
 // When
-boolean exists = authorRepository.existsById(999L);
+boolean exists = userRepository.existsById(999L);
 
 // Then
 assertThat(exists).isFalse();
@@ -180,16 +180,16 @@ assertThat(exists).isFalse();
 @DisplayName("Should return correct count of entities")
 void count_ReturnsCorrectCount() {
 // Given
-entityManager.persistAndFlush(testAuthor);
+entityManager.persistAndFlush(testUser);
 
-Author entity2 = new Author();
-            entity2.setFirstName("anotherFirstName");
-            entity2.setLastName("anotherLastName");
-            entity2.setBio("anotherBio");
+User entity2 = new User();
+            entity2.setUsername("anotherUsername");
+            entity2.setEmail("anotherEmail");
+            entity2.setPasswordHash("anotherPasswordHash");
 entityManager.persistAndFlush(entity2);
 
 // When
-long count = authorRepository.count();
+long count = userRepository.count();
 
 // Then
 assertThat(count).isEqualTo(2);

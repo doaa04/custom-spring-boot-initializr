@@ -14,6 +14,7 @@ private Long id;
 
         private String firstName;
         private String lastName;
+        private String bio;
 
 // Lombok will generate getters, setters, constructor, toString, equals, hashCode
 }

@@ -23,6 +23,9 @@ private Long id;
             @NotBlank(message = "LastName cannot be blank")
             @Size(min = 2, max = 255, message = "LastName must be between 2 and 255 characters")
         private String lastName;
+            @NotBlank(message = "Bio cannot be blank")
+            @Size(min = 2, max = 255, message = "Bio must be between 2 and 255 characters")
+        private String bio;
 
 // Lombok will generate getters, setters, constructor, toString, equals, hashCode
 }

@@ -32,7 +32,10 @@ private Book testBook;
 void setUp() {
 testBook = new Book();
             testBook.setTitle("testTitle");
+            testBook.setIsbn("testIsbn");
+            testBook.setPublicationDate(java.time.LocalDate.now());
             testBook.setPrice(100.0);
+            testBook.setAuthorId(100L);
 }
 
 @Test
@@ -48,8 +51,10 @@ Optional<Book> result = bookRepository.findById(savedEntity.getId());
 assertThat(result).isPresent();
 assertThat(result.get().getId()).isEqualTo(savedEntity.getId());
         assertThat(result.get().getTitle()).isEqualTo(testBook.getTitle());
+        assertThat(result.get().getIsbn()).isEqualTo(testBook.getIsbn());
+        assertThat(result.get().getPublicationDate()).isEqualTo(testBook.getPublicationDate());
         assertThat(result.get().getPrice()).isEqualTo(testBook.getPrice());
-        assertThat(result.get().getAuthor()).isEqualTo(testBook.getAuthor());
+        assertThat(result.get().getAuthorId()).isEqualTo(testBook.getAuthorId());
 }
 
 @Test
@@ -71,8 +76,10 @@ Book savedEntity = bookRepository.save(testBook);
 // Then
 assertThat(savedEntity.getId()).isNotNull();
         assertThat(savedEntity.getTitle()).isEqualTo(testBook.getTitle());
+        assertThat(savedEntity.getIsbn()).isEqualTo(testBook.getIsbn());
+        assertThat(savedEntity.getPublicationDate()).isEqualTo(testBook.getPublicationDate());
         assertThat(savedEntity.getPrice()).isEqualTo(testBook.getPrice());
-        assertThat(savedEntity.getAuthor()).isEqualTo(testBook.getAuthor());
+        assertThat(savedEntity.getAuthorId()).isEqualTo(testBook.getAuthorId());
 }
 
 @Test
@@ -83,7 +90,10 @@ Book savedEntity = entityManager.persistAndFlush(testBook);
 entityManager.detach(savedEntity);
 
             savedEntity.setTitle("updatedTitle");
+            savedEntity.setIsbn("updatedIsbn");
+            savedEntity.setPublicationDate(java.time.LocalDate.now().plusDays(1));
             savedEntity.setPrice(200.0);
+            savedEntity.setAuthorId(200L);
 
 // When
 Book updatedEntity = bookRepository.save(savedEntity);
@@ -91,8 +101,10 @@ Book updatedEntity = bookRepository.save(savedEntity);
 // Then
 assertThat(updatedEntity.getId()).isEqualTo(savedEntity.getId());
         assertThat(updatedEntity.getTitle()).isEqualTo(savedEntity.getTitle());
+        assertThat(updatedEntity.getIsbn()).isEqualTo(savedEntity.getIsbn());
+        assertThat(updatedEntity.getPublicationDate()).isEqualTo(savedEntity.getPublicationDate());
         assertThat(updatedEntity.getPrice()).isEqualTo(savedEntity.getPrice());
-        assertThat(updatedEntity.getAuthor()).isEqualTo(savedEntity.getAuthor());
+        assertThat(updatedEntity.getAuthorId()).isEqualTo(savedEntity.getAuthorId());
 }
 
 @Test
@@ -117,7 +129,10 @@ Book entity1 = entityManager.persistAndFlush(testBook);
 
 Book entity2 = new Book();
             entity2.setTitle("anotherTitle");
+            entity2.setIsbn("anotherIsbn");
+            entity2.setPublicationDate(java.time.LocalDate.now().plusDays(1));
             entity2.setPrice(200.0);
+            entity2.setAuthorId(200L);
 entityManager.persistAndFlush(entity2);
 
 // When
@@ -135,7 +150,10 @@ void findAll_WithPageable_ReturnsPagedResult() {
 for (int i = 0; i < 5; i++) {
 Book entity = new Book();
             entity.setTitle("testTitle" + i);
+            entity.setIsbn("testIsbn" + i);
+            entity.setPublicationDate(java.time.LocalDate.now().plusDays(i));
             entity.setPrice(100.0 + i);
+            entity.setAuthorId(100L + i);
 entityManager.persistAndFlush(entity);
 }
 
@@ -180,7 +198,10 @@ entityManager.persistAndFlush(testBook);
 
 Book entity2 = new Book();
             entity2.setTitle("anotherTitle");
+            entity2.setIsbn("anotherIsbn");
+            entity2.setPublicationDate(java.time.LocalDate.now().plusDays(1));
             entity2.setPrice(200.0);
+            entity2.setAuthorId(200L);
 entityManager.persistAndFlush(entity2);
 
 // When

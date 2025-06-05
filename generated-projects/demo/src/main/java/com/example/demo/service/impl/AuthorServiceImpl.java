@@ -61,6 +61,9 @@ public List<AuthorDto> findAll() {
                     if (authorDto.getLastName() != null) { // Simple null check
                     existingAuthor.setLastName(authorDto.getLastName());
                     }
+                    if (authorDto.getBio() != null) { // Simple null check
+                    existingAuthor.setBio(authorDto.getBio());
+                    }
             Author updatedAuthor = authorRepository.save(existingAuthor);
             return convertToDto(updatedAuthor);
             });

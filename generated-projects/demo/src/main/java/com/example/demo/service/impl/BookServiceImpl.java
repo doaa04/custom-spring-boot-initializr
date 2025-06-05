@@ -58,11 +58,17 @@ public List<BookDto> findAll() {
                     if (bookDto.getTitle() != null) { // Simple null check
                     existingBook.setTitle(bookDto.getTitle());
                     }
+                    if (bookDto.getIsbn() != null) { // Simple null check
+                    existingBook.setIsbn(bookDto.getIsbn());
+                    }
+                    if (bookDto.getPublicationDate() != null) { // Simple null check
+                    existingBook.setPublicationDate(bookDto.getPublicationDate());
+                    }
                     if (bookDto.getPrice() != null) { // Simple null check
                     existingBook.setPrice(bookDto.getPrice());
                     }
-                    if (bookDto.getAuthor() != null) { // Simple null check
-                    existingBook.setAuthor(bookDto.getAuthor());
+                    if (bookDto.getAuthorId() != null) { // Simple null check
+                    existingBook.setAuthorId(bookDto.getAuthorId());
                     }
             Book updatedBook = bookRepository.save(existingBook);
             return convertToDto(updatedBook);

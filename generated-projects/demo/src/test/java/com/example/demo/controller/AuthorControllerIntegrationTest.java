@@ -48,11 +48,13 @@ authorRepository.deleteAll();
 testAuthorDto = new AuthorDto();
             testAuthorDto.setFirstName("testFirstName");
             testAuthorDto.setLastName("testLastName");
+            testAuthorDto.setBio("testBio");
 
 // Create a saved entity for tests
 Author entity = new Author();
             entity.setFirstName("existingFirstName");
             entity.setLastName("existingLastName");
+            entity.setBio("existingBio");
 savedAuthor = authorRepository.save(entity);
 }
 
@@ -166,6 +168,7 @@ for (int i = 0; i < 5; i++) {
 Author entity = new Author();
             entity.setFirstName("testFirstName" + i);
             entity.setLastName("testLastName" + i);
+            entity.setBio("testBio" + i);
 authorRepository.save(entity);
 }
 

@@ -1,10 +1,7 @@
 package com.example.cligenerator;
 
 import com.example.cligenerator.exception.GenerationException;
-import com.example.cligenerator.model.DatabaseConfig;
-import com.example.cligenerator.model.EntityDefinition;
-import com.example.cligenerator.model.FieldDefinition;
-import com.example.cligenerator.model.ProjectDescription;
+import com.example.cligenerator.model.*;
 import com.example.cligenerator.service.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -275,7 +272,7 @@ public class CliRunner implements CommandLineRunner {
                 entitiesDescription = scanner.nextLine().trim();
                 description.setEntitiesDescription(entitiesDescription);
                 String entitiesJson = entityGenerationService.generate(description);
-                System.out.println(entitiesJson);
+                //System.out.println(entitiesJson);
                 ObjectMapper objectMapper = new ObjectMapper();
                 entityDefinitions = mapper.readValue(entitiesJson, new TypeReference<List<EntityDefinition>>() {});
             } else {
@@ -341,9 +338,22 @@ public class CliRunner implements CommandLineRunner {
 
             // dependency ai check
             System.out.println("\n--- Dependency analysis ---");
-            boolean areCompatible = dependencyCheckService.doMatch(description);
+            AISuggestion suggestion = dependencyCheckService.analyze(description);
+            System.out.println(suggestion.getExplanation());
+            boolean areCompatible = suggestion.isCompatible();
             if (!areCompatible) {
-                System.out.print("Would you like to proceed with suggested configuration? (yes/no, default: no): ");
+                System.out.println("\nSuggested Configuration:");
+                String recommendedJavaVersion = suggestion.getRecommendedJavaVersion();
+                String recommendedSpringBootVersion =  suggestion.getRecommendedSpringBootVersion();
+                System.out.println("- Java version: " + recommendedJavaVersion);
+                System.out.println("- Spring Boot version: " +recommendedSpringBootVersion);
+                System.out.print("\nWould you like to proceed with suggested configuration? (yes/no, default: no): ");
+                String acceptSuggestion = scanner.nextLine().trim();
+                boolean useSuggestion = "yes".equalsIgnoreCase(acceptSuggestion);
+                if (useSuggestion) {
+                    description.setJavaVersion(recommendedJavaVersion);
+                    description.setSpringBootVersion(recommendedSpringBootVersion);
+                }
             }
 
             System.out.print("wait");

@@ -47,12 +47,18 @@ bookRepository.deleteAll();
 
 testBookDto = new BookDto();
             testBookDto.setTitle("testTitle");
+            testBookDto.setIsbn("testIsbn");
+            testBookDto.setPublicationDate(java.time.LocalDate.now());
             testBookDto.setPrice(100.0);
+            testBookDto.setAuthorId(100L);
 
 // Create a saved entity for tests
 Book entity = new Book();
             entity.setTitle("existingTitle");
+            entity.setIsbn("existingIsbn");
+            entity.setPublicationDate(java.time.LocalDate.now().minusDays(1));
             entity.setPrice(200.0);
+            entity.setAuthorId(200L);
 savedBook = bookRepository.save(entity);
 }
 
@@ -165,7 +171,10 @@ void getAllEntities_WithPagination_ReturnsPagedResult() throws Exception {
 for (int i = 0; i < 5; i++) {
 Book entity = new Book();
             entity.setTitle("testTitle" + i);
+            entity.setIsbn("testIsbn" + i);
+            entity.setPublicationDate(java.time.LocalDate.now().minusDays(i));
             entity.setPrice(100.0 + i);
+            entity.setAuthorId(100L + i);
 bookRepository.save(entity);
 }
 

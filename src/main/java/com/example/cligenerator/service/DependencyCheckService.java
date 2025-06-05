@@ -5,6 +5,7 @@ import com.azure.ai.inference.models.ChatCompletionsOptions;
 import com.azure.ai.inference.models.ChatRequestMessage;
 import com.azure.ai.inference.models.ChatRequestSystemMessage;
 import com.example.cligenerator.config.AzureConfig;
+import com.example.cligenerator.model.AISuggestion;
 import com.example.cligenerator.model.ProjectDescription;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +18,21 @@ public class DependencyCheckService extends AIGenerator {
         super(settings);
     }
 
-    public boolean doMatch(ProjectDescription description) {
+    public AISuggestion analyze(ProjectDescription description) {
         String fullResponse = generate(description);
         String explanation = extract(fullResponse, getStartDelimiter(), getEndDelimiter());
-        String lower = fullResponse.toLowerCase();
 
-        System.out.println(explanation);
-        return !lower.startsWith("no");
+        boolean compatible = fullResponse.toLowerCase().startsWith("yes");
+        String recommendedJavaVersion = extractField(fullResponse, "Recommended Java version:");
+        String recommendedSpringBootVersion = extractField(fullResponse, "Recommended Spring Boot version:");
+
+        AISuggestion suggestion = new AISuggestion();
+        suggestion.setCompatible(compatible);
+        suggestion.setExplanation(explanation);
+        suggestion.setRecommendedJavaVersion(recommendedJavaVersion);
+        suggestion.setRecommendedSpringBootVersion(recommendedSpringBootVersion);
+
+        return suggestion;
     }
 
     @Override
@@ -46,14 +55,22 @@ public class DependencyCheckService extends AIGenerator {
             The project includes the following dependencies:
             %s
             Are all the listed dependencies compatible with the given Java and Spring Boot versions?
-            Your answer must start with the word "yes" or "no".
-            Explain which dependencies are likely to cause a problem.
-            If not compatible, conclude your response with recommended Spring Boot and Java versions that would work best with the provided dependencies.
+            
+            Your response must:
+            - Start with "yes" or "no" (for compatibility check).
+            - Wrap the explanation between %s and %s (on separate lines).
+            - If not compatible, include:
+                - Recommended Java version: <only one specific version, like 17 or 21>
+                - Recommended Spring Boot version: <only one specific version, like 3.2.5>
+            Only give exact and supported versions, not version ranges or alternatives.
+            Do not include "or" or "x" in version suggestions.
             """,
-                description.getJavaVersion(),
-                description.getSpringBootVersion(),
-                depList
-        );
+                        description.getJavaVersion(),
+                        description.getSpringBootVersion(),
+                        depList,
+                        getStartDelimiter(),
+                        getEndDelimiter()
+                );
 
         return Arrays.asList(
                 new ChatRequestSystemMessage("You are a Spring Boot and Java compatibility expert."),
@@ -71,5 +88,13 @@ public class DependencyCheckService extends AIGenerator {
     @Override
     protected String getEndDelimiter() {
         return "```";
+    }
+
+    private String extractField(String text, String fieldLabel) {
+        int index = text.indexOf(fieldLabel);
+        if (index == -1) return null;
+
+        String line = text.substring(index + fieldLabel.length()).split("\n")[0].trim();
+        return line.isEmpty() ? null : line;
     }
 }

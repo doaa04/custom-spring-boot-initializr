@@ -42,11 +42,13 @@ testAuthor = new Author();
 testAuthor.setId(1L);
             testAuthor.setFirstName("testFirstName");
             testAuthor.setLastName("testLastName");
+            testAuthor.setBio("testBio");
 
 testAuthorDto = new AuthorDto();
 testAuthorDto.setId(1L);
             testAuthorDto.setFirstName("testFirstName");
             testAuthorDto.setLastName("testLastName");
+            testAuthorDto.setBio("testBio");
 }
 
 @Test

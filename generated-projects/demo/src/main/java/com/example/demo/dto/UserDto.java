@@ -3,21 +3,18 @@ package com.example.demo.dto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-    import java.time.LocalDate;
 import jakarta.validation.constraints.*; // For annotations if you copy them here too
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookDto {
+public class UserDto {
 
 private Long id;
 
-        private String title;
-        private String isbn;
-        private LocalDate publicationDate;
-        private Double price;
-        private Long authorId;
+        private String username;
+        private String email;
+        private String passwordHash;
 
 // Lombok will generate getters, setters, constructor, toString, equals, hashCode
 }

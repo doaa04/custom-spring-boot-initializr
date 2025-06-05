@@ -9,15 +9,15 @@ import jakarta.validation.constraints.*; // For annotations if you copy them her
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookDto {
+public class ReviewDto {
 
 private Long id;
 
-        private String title;
-        private String isbn;
-        private LocalDate publicationDate;
-        private Double price;
-        private Long authorId;
+        private Long bookId;
+        private Long userId;
+        private Integer rating;
+        private String comment;
+        private LocalDate reviewDate;
 
 // Lombok will generate getters, setters, constructor, toString, equals, hashCode
 }

@@ -1,9 +1,9 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.BookDto;
-import com.example.demo.entity.Book;
-import com.example.demo.repository.BookRepository;
-import com.example.demo.service.impl.BookServiceImpl;
+import com.example.demo.dto.UserDto;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -24,169 +24,165 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Book Service Unit Tests")
-class BookServiceTest {
+@DisplayName("User Service Unit Tests")
+class UserServiceTest {
 
 @Mock
-private BookRepository bookRepository;
+private UserRepository userRepository;
 
 @InjectMocks
-private BookServiceImpl bookService;
+private UserServiceImpl userService;
 
-private Book testBook;
-private BookDto testBookDto;
+private User testUser;
+private UserDto testUserDto;
 
 @BeforeEach
 void setUp() {
-testBook = new Book();
-testBook.setId(1L);
-            testBook.setTitle("testTitle");
-            testBook.setIsbn("testIsbn");
-            testBook.setPublicationDate(java.time.LocalDate.now());
-            testBook.setPrice(100.0);
-            testBook.setAuthorId(100L);
+testUser = new User();
+testUser.setId(1L);
+            testUser.setUsername("testUsername");
+            testUser.setEmail("testEmail");
+            testUser.setPasswordHash("testPasswordHash");
 
-testBookDto = new BookDto();
-testBookDto.setId(1L);
-            testBookDto.setTitle("testTitle");
-            testBookDto.setIsbn("testIsbn");
-            testBookDto.setPublicationDate(java.time.LocalDate.now());
-            testBookDto.setPrice(100.0);
-            testBookDto.setAuthorId(100L);
+testUserDto = new UserDto();
+testUserDto.setId(1L);
+            testUserDto.setUsername("testUsername");
+            testUserDto.setEmail("testEmail");
+            testUserDto.setPasswordHash("testPasswordHash");
 }
 
 @Test
 @DisplayName("Should return all entities when findAll is called")
 void findAll_ReturnsAllEntities() {
 // Given
-List<Book> entities = Arrays.asList(testBook);
-when(bookRepository.findAll()).thenReturn(entities);
+List<User> entities = Arrays.asList(testUser);
+when(userRepository.findAll()).thenReturn(entities);
 
 // When
-List<BookDto> result = bookService.findAll();
+List<UserDto> result = userService.findAll();
 
     // Then
     assertThat(result).hasSize(1);
-    assertThat(result.get(0).getId()).isEqualTo(testBook.getId());
-    verify(bookRepository).findAll();
+    assertThat(result.get(0).getId()).isEqualTo(testUser.getId());
+    verify(userRepository).findAll();
     }
 
     @Test
     @DisplayName("Should return empty list when no entities exist")
     void findAll_NoEntities_ReturnsEmptyList() {
     // Given
-    when(bookRepository.findAll()).thenReturn(Collections.emptyList());
+    when(userRepository.findAll()).thenReturn(Collections.emptyList());
 
     // When
-    List<BookDto> result = bookService.findAll();
+    List<UserDto> result = userService.findAll();
 
         // Then
         assertThat(result).isEmpty();
-        verify(bookRepository).findAll();
+        verify(userRepository).findAll();
         }
 
         @Test
         @DisplayName("Should return entity when findById is called with existing ID")
         void findById_ExistingId_ReturnsEntity() {
         // Given
-        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(testBook));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
 
         // When
-        Optional<BookDto> result = bookService.findById(1L);
+        Optional<UserDto> result = userService.findById(1L);
 
             // Then
             assertThat(result).isPresent();
             assertThat(result.get().getId()).isEqualTo(1L);
-            verify(bookRepository).findById(1L);
+            verify(userRepository).findById(1L);
             }
 
             @Test
             @DisplayName("Should return empty when findById is called with non-existing ID")
             void findById_NonExistingId_ReturnsEmpty() {
             // Given
-            when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+            when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
             // When
-            Optional<BookDto> result = bookService.findById(999L);
+            Optional<UserDto> result = userService.findById(999L);
 
                 // Then
                 assertThat(result).isEmpty();
-                verify(bookRepository).findById(999L);
+                verify(userRepository).findById(999L);
                 }
 
                 @Test
                 @DisplayName("Should save entity successfully when valid data is provided")
                 void save_ValidEntity_ReturnsSavedEntity() {
                 // Given
-                when(bookRepository.save(any(Book.class))).thenReturn(testBook);
+                when(userRepository.save(any(User.class))).thenReturn(testUser);
 
                 // When
-                BookDto result = bookService.save(testBookDto);
+                UserDto result = userService.save(testUserDto);
 
                 // Then
                 assertThat(result).isNotNull();
-                assertThat(result.getId()).isEqualTo(testBook.getId());
-                verify(bookRepository).save(any(Book.class));
+                assertThat(result.getId()).isEqualTo(testUser.getId());
+                verify(userRepository).save(any(User.class));
                 }
 
                 @Test
                 @DisplayName("Should update entity successfully when valid data is provided")
                 void update_ValidEntity_ReturnsUpdatedEntity() {
                 // Given
-                when(bookRepository.findById(anyLong())).thenReturn(Optional.of(testBook));
-                when(bookRepository.save(any(Book.class))).thenReturn(testBook);
+                when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
+                when(userRepository.save(any(User.class))).thenReturn(testUser);
 
                 // When
-                Optional<BookDto> result = bookService.update(1L, testBookDto);
+                Optional<UserDto> result = userService.update(1L, testUserDto);
 
                     // Then
                     assertThat(result).isPresent();
-                    verify(bookRepository).findById(1L);
-                    verify(bookRepository).save(any(Book.class));
+                    verify(userRepository).findById(1L);
+                    verify(userRepository).save(any(User.class));
                     }
 
                     @Test
                     @DisplayName("Should return empty when updating non-existing entity")
                     void update_NonExistingEntity_ReturnsEmpty() {
                     // Given
-                    when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+                    when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
                     // When
-                    Optional<BookDto> result = bookService.update(999L, testBookDto);
+                    Optional<UserDto> result = userService.update(999L, testUserDto);
 
                         // Then
                         assertThat(result).isEmpty();
-                        verify(bookRepository).findById(999L);
-                        verify(bookRepository, never()).save(any(Book.class));
+                        verify(userRepository).findById(999L);
+                        verify(userRepository, never()).save(any(User.class));
                         }
 
                         @Test
                         @DisplayName("Should delete entity successfully when ID exists")
                         void deleteById_ExistingId_ReturnsTrue() {
                         // Given
-                        when(bookRepository.existsById(anyLong())).thenReturn(true);
+                        when(userRepository.existsById(anyLong())).thenReturn(true);
 
                         // When
-                        boolean result = bookService.deleteById(1L);
+                        boolean result = userService.deleteById(1L);
 
                         // Then
                         assertThat(result).isTrue();
-                        verify(bookRepository).existsById(1L);
-                        verify(bookRepository).deleteById(1L);
+                        verify(userRepository).existsById(1L);
+                        verify(userRepository).deleteById(1L);
                         }
 
                         @Test
                         @DisplayName("Should return false when deleting non-existing entity")
                         void deleteById_NonExistingId_ReturnsFalse() {
                         // Given
-                        when(bookRepository.existsById(anyLong())).thenReturn(false);
+                        when(userRepository.existsById(anyLong())).thenReturn(false);
 
                         // When
-                        boolean result = bookService.deleteById(999L);
+                        boolean result = userService.deleteById(999L);
 
                         // Then
                         assertThat(result).isFalse();
-                        verify(bookRepository).existsById(999L);
-                        verify(bookRepository, never()).deleteById(anyLong());
+                        verify(userRepository).existsById(999L);
+                        verify(userRepository, never()).deleteById(anyLong());
                         }
                         }
