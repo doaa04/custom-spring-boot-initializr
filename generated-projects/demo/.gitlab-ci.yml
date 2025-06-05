@@ -1,0 +1,22 @@
+image: openjdk:17
+
+stages:
+  - build
+  - test
+  - package
+
+build-job:
+  stage: build
+  script:
+    - mvn clean compile
+
+test-job:
+  stage: test
+  script:
+    - mvn test
+
+package-job:
+  stage: package
+  script:
+    - mvn clean package
+    - mv target/*.jar demo.jar
