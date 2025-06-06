@@ -24,4 +24,9 @@ public class ProjectDescription {
     private String githubRemoteUrl;
     private boolean isSupportingAI;
     private String entitiesDescription;
+    private boolean includesDocker;
+    private boolean includesSwagger;
+    private boolean includesGitlab;
+    private boolean includesTests;
+    private boolean includesGit;
 }

@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+
 @Component
 public class CliRunner implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(CliRunner.class);
@@ -58,7 +59,7 @@ public class CliRunner implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args)  {
         ConfigurationService.ProjectConfiguration config = null;
 
         try {
@@ -279,7 +280,7 @@ public class CliRunner implements CommandLineRunner {
 
             // creating a project description instance to be passed later into concerned services
             ProjectDescription description = new ProjectDescription(
-                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, buildTool, entityDefinitions, databaseConfig, remoteUrl, enableAI, entitiesDescription
+                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, buildTool, entityDefinitions, databaseConfig, remoteUrl, enableAI, entitiesDescription, includeDocker, generateOpenApi, includeGitlab, includeTests, pushToGit
             );
 
             if (enableAI) {
