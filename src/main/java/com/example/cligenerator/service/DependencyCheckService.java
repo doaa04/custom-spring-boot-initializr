@@ -76,6 +76,7 @@ public class DependencyCheckService extends AIGenerator {
                 new ChatRequestSystemMessage("You are a Spring Boot and Java compatibility expert."),
                 new ChatRequestSystemMessage(prompt),
                 new ChatRequestSystemMessage("The explanation must be simply presented in seperate lines"),
+                new ChatRequestSystemMessage("If no dependencies found, only check the compatibility of Java and Spring Boot versions"),
                 new ChatRequestSystemMessage("The explanation must be wrapped around " + getStartDelimiter() + " and " + getEndDelimiter())
         );
     }

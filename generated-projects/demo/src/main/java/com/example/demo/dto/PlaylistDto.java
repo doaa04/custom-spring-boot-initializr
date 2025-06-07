@@ -8,13 +8,12 @@ import jakarta.validation.constraints.*; // For annotations if you copy them her
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class PlaylistDto {
 
 private Long id;
 
-        private String username;
-        private String email;
-        private String passwordHash;
+        private String name;
+        private String description;
 
 // Lombok will generate getters, setters, constructor, toString, equals, hashCode
 }

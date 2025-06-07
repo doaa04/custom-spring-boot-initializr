@@ -55,8 +55,14 @@ public List<UserDto> findAll() {
             .map(existingUser -> {
             // Update fields from DTO. Be careful with BeanUtils if non-null properties are important
             // Manually map fields for more control:
-                    if (userDto.getName() != null) { // Simple null check
-                    existingUser.setName(userDto.getName());
+                    if (userDto.getUsername() != null) { // Simple null check
+                    existingUser.setUsername(userDto.getUsername());
+                    }
+                    if (userDto.getEmail() != null) { // Simple null check
+                    existingUser.setEmail(userDto.getEmail());
+                    }
+                    if (userDto.getPasswordHash() != null) { // Simple null check
+                    existingUser.setPasswordHash(userDto.getPasswordHash());
                     }
             User updatedUser = userRepository.save(existingUser);
             return convertToDto(updatedUser);

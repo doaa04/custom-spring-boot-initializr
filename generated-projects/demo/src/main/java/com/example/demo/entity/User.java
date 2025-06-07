@@ -17,9 +17,15 @@ public class User {
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
 
-            @NotBlank(message = "Name cannot be blank")
-            @Size(min = 2, max = 255, message = "Name must be between 2 and 255 characters")
-        private String name;
+            @NotBlank(message = "Username cannot be blank")
+            @Size(min = 2, max = 255, message = "Username must be between 2 and 255 characters")
+        private String username;
+            @NotBlank(message = "Email cannot be blank")
+            @Size(min = 2, max = 255, message = "Email must be between 2 and 255 characters")
+        private String email;
+            @NotBlank(message = "PasswordHash cannot be blank")
+            @Size(min = 2, max = 255, message = "PasswordHash must be between 2 and 255 characters")
+        private String passwordHash;
 
 // Lombok will generate getters, setters, constructor, toString, equals, hashCode
 }
