@@ -8,10 +8,15 @@ import com.example.cligenerator.service.ProjectGenerationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @CrossOrigin("http://localhost:3000")
 @RestController
@@ -26,36 +31,46 @@ public class ProjectGenerationController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<String> generateProject(@RequestBody ProjectDescription description) throws JsonProcessingException, GenerationException {
+    public ResponseEntity<byte[]> generateProject(@RequestBody ProjectDescription description) throws JsonProcessingException, GenerationException {
         if (!description.getEntitiesDescription().isEmpty()) {
             description.setSupportingAI(true);
             String entitiesJson = entityGenerationService.generate(description);
             ObjectMapper mapper = new ObjectMapper();
             description.setEntities(mapper.readValue(entitiesJson, new TypeReference<List<EntityDefinition>>() {}));
         }
-        System.out.println("Recieved:");
-        System.out.println(description.getProjectName());
-        System.out.println(description.getGroupId());
-        System.out.println(description.getArtifactId());
-        System.out.println(description.getPackageName());
-        System.out.println(description.getJavaVersion());
-        System.out.println(description.getSpringBootVersion());
-        System.out.println(description.getDependencies());
-        System.out.println(description.getOutputDir());
-        System.out.println(description.getBuildTool());
-        System.out.println(description.getDatabaseConfig());
 
-        System.out.println("- entities: " + description.getEntities());
-        System.out.println("- description:  " + description.getEntitiesDescription());
-        System.out.println("- ai: " + description.isSupportingAI());
-        System.out.println("- docker: " + description.isIncludesDocker());
-        System.out.println("- git: " + description.isIncludesGit());
-        System.out.println("- github: " + description.getGithubRemoteUrl());
-        System.out.println("- tests: " + description.isIncludesTests());
-        System.out.println("- gitlab: " + description.isIncludesGitlab());
-        System.out.println("- swagger: " + description.isIncludesSwagger());
+        Path projectBasePath;
+        try {
+            projectBasePath = projectGenerationService.generateProject(description);
+            Path zipPath = Files.createTempFile("project-", ".zip");
+            zipDirectory(projectBasePath, zipPath);
+            byte[] zipBytes = Files.readAllBytes(zipPath);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDisposition(ContentDisposition.attachment()
+                    .filename(projectBasePath.getFileName().toString() + ".zip")
+                    .build());
+            return new ResponseEntity<>(zipBytes, headers, HttpStatus.OK);
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
-        projectGenerationService.generateProject(description);
-        return ResponseEntity.ok("Project parsed and received successfully.");
+    private void zipDirectory(Path sourceDirPath, Path zipFilePath) throws IOException {
+        try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(zipFilePath))) {
+            Files.walk(sourceDirPath)
+                    .filter(path -> !Files.isDirectory(path))
+                    .forEach(path -> {
+                        ZipEntry zipEntry = new ZipEntry(sourceDirPath.relativize(path).toString());
+                        try {
+                            zs.putNextEntry(zipEntry);
+                            Files.copy(path, zs);
+                            zs.closeEntry();
+                        } catch (IOException e) {
+                            throw new RuntimeException("Failed to zip file: " + path, e);
+                        }
+                    });
+        }
     }
 }

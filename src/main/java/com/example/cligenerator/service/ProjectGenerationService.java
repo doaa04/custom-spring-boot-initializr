@@ -103,9 +103,6 @@ public class ProjectGenerationService {
                 System.out.println("Setting up GitHub repository...");
                 gitService.initPush(projectBasePath, description);
             }
-
-
-
         } catch (Exception e) {
             throw new GenerationException("Code Generation", "Failed to generate project files",
                     "Error during code generation: " + e.getMessage(), e);

@@ -32,6 +32,7 @@ public class CliRunner implements CommandLineRunner {
     private final TemplateService templateService;
     private final ApiDocumentationService apiDocumentationService;
     private final ConfigurationService configurationService;
+    private final ProjectGenerationService projectGenerationService;
     private final Scanner scanner = new Scanner(System.in);
 
     public CliRunner(InitializrService initializrService,
@@ -44,7 +45,8 @@ public class CliRunner implements CommandLineRunner {
                      EntityGenerationService entityGenerationService,
                      TemplateService templateService,
                      ApiDocumentationService apiDocumentationService,
-                     ConfigurationService configurationService) {
+                     ConfigurationService configurationService,
+                     ProjectGenerationService projectGenerationService) {
         this.initializrService = initializrService;
         this.codeGeneratorService = codeGeneratorService;
         this.testGenerationService = testGenerationService;
@@ -56,6 +58,7 @@ public class CliRunner implements CommandLineRunner {
         this.templateService = templateService;
         this.apiDocumentationService = apiDocumentationService;
         this.configurationService = configurationService;
+        this.projectGenerationService = projectGenerationService;
     }
 
     @Override
@@ -215,13 +218,6 @@ public class CliRunner implements CommandLineRunner {
                 }
             }
 
-            /*
-            System.out.print("Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");
-            String deps = scanner.nextLine().trim();
-            if (!deps.isEmpty())
-                dependencies = dependencies + "," + deps;
-             */
-
             System.out.print("Choose build tool (maven/gradle, default: maven): ");
             String buildTool = scanner.nextLine().trim().toLowerCase();
             if (!buildTool.equals("gradle") && !buildTool.equals("maven")) {
@@ -352,6 +348,7 @@ public class CliRunner implements CommandLineRunner {
 
             description.setEntities(entityDefinitions);
 
+
             // dependency ai check
             System.out.println("\n--- Dependency analysis ---");
             AISuggestion suggestion = dependencyCheckService.analyze(description);
@@ -372,6 +369,7 @@ public class CliRunner implements CommandLineRunner {
                 }
             }
 
+
             System.out.print("wait");
             String wait = scanner.nextLine().trim();
 
@@ -379,72 +377,8 @@ public class CliRunner implements CommandLineRunner {
             System.out.println("\nStarting project generation...");
             logger.info("Generating project: {}", projectName);
 
-            Path projectBasePath;
-            try {
-                projectBasePath = initializrService.downloadAndUnzipProject(
-                        projectName, groupId, artifactId, packageName,
-                        javaVersion, springBootVersion, dependencies,
-                        buildTool, outputDir);
-            } catch (Exception e) {
-                throw new GenerationException("Spring Initializr", "Failed to generate base project",
-                        "Error downloading from Spring Initializr: " + e.getMessage(), e);
-            }
+            Path projectBasePath = projectGenerationService.generateProject(description);
 
-            // Find the actual package where the main class was created
-            String actualPackageName = findMainClassPackage(projectBasePath, artifactId);
-            if (actualPackageName != null) {
-                packageName = actualPackageName;
-                System.out.println("Using detected package: " + packageName);
-            }
-
-            try {
-                // Generate application.properties with database configuration
-                codeGeneratorService.generateApplicationProperties(projectBasePath, databaseConfig);
-
-                // Generate entity code
-                for (EntityDefinition entityDef : entityDefinitions) {
-                    logger.info("Generating code for entity: {}", entityDef.getName());
-                    codeGeneratorService.generateCode(projectBasePath, packageName, entityDef);
-                } // Generate comprehensive API documentation if requested
-                if (generateOpenApi) {
-                    System.out.println("Adding OpenAPI dependency...");
-                    codeGeneratorService.addOpenApiDependency(projectBasePath, description);
-                    System.out.println("Generating comprehensive API documentation...");
-                    apiDocumentationService.generateApiDocumentation(projectBasePath, packageName, projectName,
-                            entityDefinitions);
-                }
-
-                // Generate Docker configuration if requested
-                if (includeDocker) {
-                    System.out.println("Generating Docker configuration...");
-                    dockerService.generateDockerConfiguration(projectBasePath, artifactId, javaVersion, databaseConfig);
-                }
-
-                // Generate Gitlab configuration if requested
-                if (includeGitlab) {
-                    System.out.println("Generating Gitlab configuration...");
-                    gitlabService.generateGitlabConfiguration(projectBasePath, description);
-                }
-
-                // Generate tests if requested
-                if (includeTests) {
-                    System.out.println("Generating comprehensive tests...");
-                    for (EntityDefinition entityDef : entityDefinitions) {
-                        testGenerationService.generateTestsForEntity(projectBasePath, packageName, entityDef);
-                    }
-                }
-
-                if (pushToGit) {
-                    System.out.println("Setting up GitHub repository...");
-                    gitService.initPush(projectBasePath, description);
-                }
-
-
-
-            } catch (Exception e) {
-                throw new GenerationException("Code Generation", "Failed to generate project files",
-                        "Error during code generation: " + e.getMessage(), e);
-            }
             System.out.println("\n" + "=".repeat(80));
             System.out.println("✅ SUCCESS: Enhanced project '" + projectName + "' generated at: "
                     + projectBasePath.toAbsolutePath());
@@ -509,42 +443,6 @@ public class CliRunner implements CommandLineRunner {
         }
     }
 
-    private String findMainClassPackage(Path projectBasePath, String artifactId) {
-        try {
-            String mainClassName = toCamelCase(artifactId) + "Application";
-            Path srcPath = projectBasePath.resolve("src/main/java");
-
-            return Files.walk(srcPath)
-                    .filter(Files::isRegularFile)
-                    .filter(path -> path.getFileName().toString().equals(mainClassName + ".java"))
-                    .findFirst()
-                    .map(path -> {
-                        Path relativePath = srcPath.relativize(path.getParent());
-                        return relativePath.toString().replace('/', '.').replace('\\', '.');
-                    })
-                    .orElse(null);
-        } catch (Exception e) {
-            System.out.println("Could not detect main class package, using provided package name");
-            return null;
-        }
-    }
-
-    private String toCamelCase(String input) {
-        StringBuilder result = new StringBuilder();
-        boolean capitalizeNext = true;
-        for (char c : input.toCharArray()) {
-            if (c == '-' || c == '_') {
-                capitalizeNext = true;
-            } else if (capitalizeNext) {
-                result.append(Character.toUpperCase(c));
-                capitalizeNext = false;
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString();
-    }
-
     /**
      * Get validated input with custom validation function
      */
@@ -572,12 +470,4 @@ public class CliRunner implements CommandLineRunner {
     /**
      * Get boolean input with default
      */
-    private boolean getBooleanInput(String prompt, boolean defaultValue) {
-        System.out.print(prompt);
-        String input = scanner.nextLine().trim();
-        if (input.isEmpty()) {
-            return defaultValue;
-        }
-        return "yes".equalsIgnoreCase(input) || "y".equalsIgnoreCase(input) || "true".equalsIgnoreCase(input);
-    }
 }
