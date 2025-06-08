@@ -29,4 +29,5 @@ public class ProjectDescription {
     private boolean includesGitlab;
     private boolean includesTests;
     private boolean includesGit;
+    private boolean includesAIServiceMethods;
 }

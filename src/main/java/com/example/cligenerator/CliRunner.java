@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-
 @Component
 public class CliRunner implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(CliRunner.class);
@@ -36,17 +35,17 @@ public class CliRunner implements CommandLineRunner {
     private final Scanner scanner = new Scanner(System.in);
 
     public CliRunner(InitializrService initializrService,
-                     CodeGeneratorService codeGeneratorService,
-                     TestGenerationService testGenerationService,
-                     DockerService dockerService,
-                     GitlabService gitlabService,
-                     GitService gitService,
-                     DependencyCheckService dependencyCheckService,
-                     EntityGenerationService entityGenerationService,
-                     TemplateService templateService,
-                     ApiDocumentationService apiDocumentationService,
-                     ConfigurationService configurationService,
-                     ProjectGenerationService projectGenerationService) {
+            CodeGeneratorService codeGeneratorService,
+            TestGenerationService testGenerationService,
+            DockerService dockerService,
+            GitlabService gitlabService,
+            GitService gitService,
+            DependencyCheckService dependencyCheckService,
+            EntityGenerationService entityGenerationService,
+            TemplateService templateService,
+            ApiDocumentationService apiDocumentationService,
+            ConfigurationService configurationService,
+            ProjectGenerationService projectGenerationService) {
         this.initializrService = initializrService;
         this.codeGeneratorService = codeGeneratorService;
         this.testGenerationService = testGenerationService;
@@ -62,7 +61,7 @@ public class CliRunner implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args)  {
+    public void run(String... args) {
         ConfigurationService.ProjectConfiguration config = null;
 
         try {
@@ -115,11 +114,11 @@ public class CliRunner implements CommandLineRunner {
             }
 
             String javaVersion = getInputWithDefault("Enter Java version (default: " +
-                            config.getDefaultValues().get("javaVersion") + "): ",
+                    config.getDefaultValues().get("javaVersion") + "): ",
                     config.getDefaultValues().get("javaVersion"));
 
             String springBootVersion = getInputWithDefault("Enter Spring Boot version (default: " +
-                            config.getDefaultValues().get("springBootVersion") + "): ",
+                    config.getDefaultValues().get("springBootVersion") + "): ",
                     config.getDefaultValues().get("springBootVersion"));
 
             String dependencies = "web,data-jpa,lombok,validation";
@@ -167,7 +166,6 @@ public class CliRunner implements CommandLineRunner {
             // generation
             // since Spring Initializr doesn't support the springdoc dependency directly
 
-
             // fetching dependencies
             String metadataUrl = "https://start.spring.io/metadata/client";
             RestTemplate restTemplate = new RestTemplate();
@@ -192,7 +190,8 @@ public class CliRunner implements CommandLineRunner {
                     try {
                         int selectedIndex = Integer.parseInt(part.trim());
                         JsonNode category = categoryMap.get(selectedIndex);
-                        if (category == null) continue;
+                        if (category == null)
+                            continue;
 
                         System.out.println("\nDependencies in " + category.path("name").asText() + ":");
                         for (JsonNode dep : category.path("values")) {
@@ -201,7 +200,8 @@ public class CliRunner implements CommandLineRunner {
                             System.out.println("- " + name + " (" + id + ")");
                         }
 
-                        System.out.print("Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");
+                        System.out.print(
+                                "Enter dependencies to add (comma-separated. Already chosen: " + dependencies + "): ");
                         String depsInput = scanner.nextLine().trim();
                         if (!depsInput.isEmpty()) {
                             for (String dep : depsInput.split(",")) {
@@ -223,7 +223,6 @@ public class CliRunner implements CommandLineRunner {
             if (!buildTool.equals("gradle") && !buildTool.equals("maven")) {
                 buildTool = "maven"; // default
             }
-
 
             System.out.print("Enter output directory for the generated project (e.g., ./generated-projects): ");
             String outputDir = scanner.nextLine().trim();
@@ -249,7 +248,8 @@ public class CliRunner implements CommandLineRunner {
             String remoteUrl = "";
             if (pushToGit) {
                 while (true) {
-                    System.out.print("Enter your remote Git repository URL (e.g., https://token@github.com/user/my-repo.git): ");
+                    System.out.print(
+                            "Enter your remote Git repository URL (e.g., https://token@github.com/user/my-repo.git): ");
                     remoteUrl = scanner.nextLine().trim();
 
                     if (remoteUrl.isEmpty()) {
@@ -261,32 +261,37 @@ public class CliRunner implements CommandLineRunner {
                     boolean isValidHttps = remoteUrl.startsWith("https://") && remoteUrl.endsWith(".git");
                     boolean isValidSsh = remoteUrl.matches("^git@[^\\s:]+:[^\\s]+\\.git$");
 
-                    if (isValidHttps || isValidSsh) break;
-                    else System.out.println("Invalid Git URL. Make sure it starts with 'https://' and ends with '.git', or follows the SSH format.");
+                    if (isValidHttps || isValidSsh)
+                        break;
+                    else
+                        System.out.println(
+                                "Invalid Git URL. Make sure it starts with 'https://' and ends with '.git', or follows the SSH format.");
                 }
             }
 
-
             // --- Entity Definitions ---
-            System.out.print("Would you like to use AI to generate your project from a description? (yes to use AI / no to enter entities manually, default: yes): ");
+            System.out.print(
+                    "Would you like to use AI to generate your project from a description? (yes to use AI / no to enter entities manually, default: yes): ");
             String useAI = scanner.nextLine().trim();
             boolean enableAI = useAI.isEmpty() || "yes".equalsIgnoreCase(useAI);
             List<EntityDefinition> entityDefinitions = new ArrayList<>();
-            String entitiesDescription = "";
-
-            // creating a project description instance to be passed later into concerned services
+            String entitiesDescription = ""; // creating a project description instance to be passed later into
+                                             // concerned services
             ProjectDescription description = new ProjectDescription(
-                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,  Arrays.asList(dependencies.split(",")), outputDir, buildTool, entityDefinitions, databaseConfig, remoteUrl, enableAI, entitiesDescription, includeDocker, generateOpenApi, includeGitlab, includeTests, pushToGit
-            );
+                    projectName, groupId, artifactId, packageName, javaVersion, springBootVersion,
+                    Arrays.asList(dependencies.split(",")), outputDir, buildTool, entityDefinitions, databaseConfig,
+                    remoteUrl, enableAI, entitiesDescription, includeDocker, generateOpenApi, includeGitlab,
+                    includeTests, pushToGit, false);
 
             if (enableAI) {
-                System.out.print("Describe your project (e.g. 'A school management system with students and teachers'): ");
+                System.out.print(
+                        "Describe your project (e.g. 'A school management system with students and teachers'): ");
                 entitiesDescription = scanner.nextLine().trim();
                 description.setEntitiesDescription(entitiesDescription);
                 String entitiesJson = entityGenerationService.generate(description);
-                //System.out.println(entitiesJson);
-                ObjectMapper objectMapper = new ObjectMapper();
-                entityDefinitions = mapper.readValue(entitiesJson, new TypeReference<List<EntityDefinition>>() {});
+                // System.out.println(entitiesJson);
+                entityDefinitions = mapper.readValue(entitiesJson, new TypeReference<List<EntityDefinition>>() {
+                });
             } else {
                 boolean addMoreEntities = true;
                 while (addMoreEntities) {
@@ -348,7 +353,6 @@ public class CliRunner implements CommandLineRunner {
 
             description.setEntities(entityDefinitions);
 
-
             // dependency ai check
             System.out.println("\n--- Dependency analysis ---");
             AISuggestion suggestion = dependencyCheckService.analyze(description);
@@ -357,9 +361,9 @@ public class CliRunner implements CommandLineRunner {
             if (!areCompatible) {
                 System.out.println("\nSuggested Configuration:");
                 String recommendedJavaVersion = suggestion.getRecommendedJavaVersion();
-                String recommendedSpringBootVersion =  suggestion.getRecommendedSpringBootVersion();
+                String recommendedSpringBootVersion = suggestion.getRecommendedSpringBootVersion();
                 System.out.println("- Java version: " + recommendedJavaVersion);
-                System.out.println("- Spring Boot version: " +recommendedSpringBootVersion);
+                System.out.println("- Spring Boot version: " + recommendedSpringBootVersion);
                 System.out.print("\nWould you like to proceed with suggested configuration? (yes/no, default: no): ");
                 String acceptSuggestion = scanner.nextLine().trim();
                 boolean useSuggestion = "yes".equalsIgnoreCase(acceptSuggestion);
@@ -367,13 +371,21 @@ public class CliRunner implements CommandLineRunner {
                     description.setJavaVersion(recommendedJavaVersion);
                     description.setSpringBootVersion(recommendedSpringBootVersion);
                 }
+            } // --- AI Service Method Generation ---
+            System.out.println("\n--- Enhanced Service Layer Generation ---");
+            System.out.print(
+                    "Generate AI-powered additional service methods based on your project description? (yes/no, default: yes): ");
+            String generateAIServiceMethods = scanner.nextLine().trim();
+            boolean includeAIServiceMethods = generateAIServiceMethods.isEmpty()
+                    || "yes".equalsIgnoreCase(generateAIServiceMethods);
+            if (includeAIServiceMethods) {
+                System.out.println("✓ Will generate 1-2 additional useful service methods per entity using AI");
+                System.out.println("  These methods will be based on your project description and entity structure");
             }
 
+            // Set the AI service methods preference in the description
+            description.setIncludesAIServiceMethods(includeAIServiceMethods);
 
-            System.out.print("wait");
-            String wait = scanner.nextLine().trim();
-
-            // --- Generation ---
             System.out.println("\nStarting project generation...");
             logger.info("Generating project: {}", projectName);
 
@@ -447,7 +459,7 @@ public class CliRunner implements CommandLineRunner {
      * Get validated input with custom validation function
      */
     private String getValidatedInput(String prompt, java.util.function.Predicate<String> validator,
-                                     String errorMessage) {
+            String errorMessage) {
         while (true) {
             System.out.print(prompt);
             String input = scanner.nextLine().trim();
